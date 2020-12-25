@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Harmony;
@@ -11,80 +12,118 @@ namespace ChildToNPC.Patches
      * This is a mix of code from the original method and my own.
      * I use reflection to access private methods in the NPC class.
      */
-
     [HarmonyPatch(typeof(NPC))]
     [HarmonyPatch("checkSchedule")]
     class NPCCheckSchedulePatch
     {
-        public static bool Prefix(NPC __instance, int timeOfDay, ref Point ___previousEndPoint, ref string ___extraDialogueMessageToAddThisMorning, ref SchedulePathDescription ___directionsToNewLocation, ref Rectangle ___lastCrossroad, ref NetString ___endOfRouteBehaviorName)
+        public static bool Prefix(NPC __instance, int timeOfDay, ref Point ___previousEndPoint, ref string ___extraDialogueMessageToAddThisMorning, ref SchedulePathDescription ___directionsToNewLocation, ref Rectangle ___lastCrossroad, ref NetString ___endOfRouteBehaviorName, ref bool ___returningToEndPoint)
         {
             if (!ModEntry.IsChildNPC(__instance))
                 return true;
-            
-            var scheduleTimeToTry = ModEntry.helper.Reflection.GetField<int>(__instance, "scheduleTimeToTry");
 
-            __instance.updatedDialogueYet = false;
-            ___extraDialogueMessageToAddThisMorning = null;
-            if (__instance.ignoreScheduleToday || __instance.Schedule == null)
-                return false;
-
-            __instance.Schedule.TryGetValue(scheduleTimeToTry.GetValue() == 9999999 ? timeOfDay : scheduleTimeToTry.GetValue(), out SchedulePathDescription schedulePathDescription);
-
-            //If I have curfew, override the normal behavior
-            if (ModEntry.Config.DoChildrenHaveCurfew && !__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse")))
+            if (__instance.currentScheduleDelay == 0f && __instance.scheduleDelaySeconds > 0f)
             {
-                //Send child home for curfew
-                if(timeOfDay == ModEntry.Config.CurfewTime)
-                {
-                    object[] pathfindParams = { __instance.currentLocation.Name, __instance.getTileX(), __instance.getTileY(), "BusStop", -1, 23, 3, null, null };
-                    schedulePathDescription = ModEntry.helper.Reflection.GetMethod(__instance, "pathfindToNextScheduleLocation", true).Invoke<SchedulePathDescription>(pathfindParams);
-                }
-                //Ignore scheduled events after curfew
-                else if(timeOfDay > ModEntry.Config.CurfewTime)
-                {
-                    schedulePathDescription = null;
-                }
+                __instance.currentScheduleDelay = __instance.scheduleDelaySeconds;
             }
-
-            if (schedulePathDescription == null)
-                return false;
-
-            //Normally I would see a IsMarried check here, but FarmHouse may be better?
-            //(I think this section is meant for handling when the character is still walking)
-            if (!__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse")) || !__instance.IsWalkingInSquare || ___lastCrossroad.Center.X / 64 != ___previousEndPoint.X && ___lastCrossroad.Y / 64 != ___previousEndPoint.Y)
+            else
             {
-                if (!___previousEndPoint.Equals(Point.Zero) && !___previousEndPoint.Equals(__instance.getTileLocationPoint()))
+                if (___returningToEndPoint)
                 {
-                    if (scheduleTimeToTry.GetValue() == 9999999)
-                        scheduleTimeToTry.SetValue(timeOfDay);
                     return false;
                 }
+
+                __instance.updatedDialogueYet = false;
+                ___extraDialogueMessageToAddThisMorning = null;
+                if (__instance.ignoreScheduleToday || __instance.Schedule == null)
+                {
+                    return false;
+                }
+
+                SchedulePathDescription value = null;
+                if (__instance.lastAttemptedSchedule < timeOfDay)
+                {
+                    __instance.lastAttemptedSchedule = timeOfDay;
+                    __instance.Schedule.TryGetValue(timeOfDay, out value);
+                    if (value != null)
+                    {
+                        __instance.queuedSchedulePaths.Add(new KeyValuePair<int, SchedulePathDescription>(timeOfDay, value));
+                    }
+                    value = null;
+                }
+
+                //If I have curfew, override the normal behavior
+                if (ModEntry.Config.DoChildrenHaveCurfew && !__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse")))
+                {
+                    //Send child home for curfew
+                    if(timeOfDay == ModEntry.Config.CurfewTime)
+                    {
+                        object[] pathfindParams = { __instance.currentLocation.Name, __instance.getTileX(), __instance.getTileY(), "BusStop", -1, 23, 3, null, null };
+                        value = ModEntry.helper
+                                        .Reflection
+                                        .GetMethod(__instance, "pathfindToNextScheduleLocation", true)
+                                        .Invoke<SchedulePathDescription>(pathfindParams);
+                        __instance.queuedSchedulePaths.Clear();
+                        __instance.queuedSchedulePaths.Add(new KeyValuePair<int, SchedulePathDescription>(timeOfDay, value));
+                    }
+                    value = null;
+                }
+
+                if (__instance.controller != null && __instance.controller.pathToEndPoint != null && __instance.controller.pathToEndPoint.Count > 0)
+                {
+                    return false;
+                }
+
+                if (__instance.queuedSchedulePaths.Count > 0 && timeOfDay >= __instance.queuedSchedulePaths[0].Key)
+                {
+                    value = __instance.queuedSchedulePaths[0].Value;
+                }
+
+                if (value == null)
+                {
+                    return false;
+                }
+
+                //prepareToDisembarkOnNewSchedulePath();
+                ModEntry.helper
+                        .Reflection
+                        .GetMethod(__instance, "prepareToDisembarkOnNewSchedulePath", true)
+                        .Invoke(null);
+
+                if (___returningToEndPoint || __instance.temporaryController != null)
+                {
+                    return false;
+                }
+
+                __instance.DirectionsToNewLocation = value;
+                if (__instance.queuedSchedulePaths.Count > 0)
+                {
+                    __instance.queuedSchedulePaths.RemoveAt(0);
+                }
+
+                __instance.controller = new PathFindController(__instance.DirectionsToNewLocation.route, __instance, Utility.getGameLocationOfCharacter(__instance))
+                {
+                    finalFacingDirection = __instance.DirectionsToNewLocation.facingDirection,
+                    //endBehaviorFunction = __instance.getRouteEndBehaviorFunction(__instance.DirectionsToNewLocation.endOfRouteBehavior, __instance.DirectionsToNewLocation.endOfRouteMessage)
+                    endBehaviorFunction = ModEntry.helper
+                                                  .Reflection
+                                                  .GetMethod(__instance, "getRouteEndBehaviorFunction", true)
+                                                  .Invoke<PathFindController.endBehavior>(__instance.DirectionsToNewLocation.endOfRouteBehavior, __instance.DirectionsToNewLocation.endOfRouteMessage)
+                };
+
+                if (__instance.controller.pathToEndPoint == null || __instance.controller.pathToEndPoint.Count == 0)
+                {
+                    if (__instance.controller.endBehaviorFunction != null)
+                    {
+                        __instance.controller.endBehaviorFunction(__instance, __instance.currentLocation);
+                    }
+                    __instance.controller = null;
+                }
+
+                if (__instance.DirectionsToNewLocation != null && __instance.DirectionsToNewLocation.route != null)
+                {
+                    ___previousEndPoint = ((__instance.DirectionsToNewLocation.route.Count > 0) ? __instance.DirectionsToNewLocation.route.Last() : Point.Zero);
+                }
             }
-
-            ___directionsToNewLocation = schedulePathDescription;
-
-            //__instance.prepareToDisembarkOnNewSchedulePath();
-            ModEntry.helper.Reflection.GetMethod(__instance, "prepareToDisembarkOnNewSchedulePath", true).Invoke(null);
-
-            if (__instance.Schedule == null)
-                return false;
-
-            if (___directionsToNewLocation != null && ___directionsToNewLocation.route != null && ___directionsToNewLocation.route.Count > 0 && (Math.Abs(__instance.getTileLocationPoint().X - ___directionsToNewLocation.route.Peek().X) > 1 || Math.Abs(__instance.getTileLocationPoint().Y - ___directionsToNewLocation.route.Peek().Y) > 1) && __instance.temporaryController == null)
-            {
-                scheduleTimeToTry.SetValue(9999999);
-                return false;
-            }
-
-            __instance.controller = new PathFindController(___directionsToNewLocation.route, __instance, Utility.getGameLocationOfCharacter(__instance))
-            {
-                finalFacingDirection = ___directionsToNewLocation.facingDirection,
-                //endBehaviorFunction = this.getRouteEndBehaviorFunction(this.directionsToNewLocation.endOfRouteBehavior, this.directionsToNewLocation.endOfRouteMessage)
-                endBehaviorFunction = ModEntry.helper.Reflection.GetMethod(__instance, "getRouteEndBehaviorFunction", true).Invoke<PathFindController.endBehavior>(new object[] { __instance.DirectionsToNewLocation.endOfRouteBehavior, __instance.DirectionsToNewLocation.endOfRouteMessage })
-            };
-            scheduleTimeToTry.SetValue(9999999);
-
-            if (___directionsToNewLocation != null && ___directionsToNewLocation.route != null)
-                ___previousEndPoint = ___directionsToNewLocation.route.Count > 0 ? ___directionsToNewLocation.route.Last() : Point.Zero;
 
             return false;
         }
