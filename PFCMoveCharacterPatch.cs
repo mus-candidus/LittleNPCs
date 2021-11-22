@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
-using Harmony;
+using HarmonyLib;
 using StardewValley;
 using StardewValley.Locations;
 
