@@ -130,8 +130,19 @@ namespace ChildToNPC.Patches
                 if (int.TryParse(locationName, out int result))
                     locationName = startingLocation;
 
-                int positionX = Convert.ToInt32(currentEvent[2]);
-                int positionY = Convert.ToInt32(currentEvent[3]);
+                // Provide a meaningful error message: Convert.ToInt32() would throw as well
+                // but won't give us any details about the unconvertible string.
+                int positionX;
+                if (!int.TryParse(currentEvent[2], out positionX))
+                {
+                    throw new ArgumentException($"Couldn't parse string as int: {currentEvent[2]}");
+                }
+
+                int positionY;
+                if (!int.TryParse(currentEvent[3], out positionY))
+                {
+                    throw new ArgumentException($"Couldn't parse string as int: {currentEvent[3]}");
+                }
 
                 int endIndex = 4;
                 int facingDirection;
