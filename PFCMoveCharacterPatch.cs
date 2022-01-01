@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
-using HarmonyLib;
 using StardewValley;
 using StardewValley.Locations;
 
@@ -11,8 +10,6 @@ namespace ChildToNPC.Patches
      * because the section with the marriage requirement is in the middle.
      * So I fully execute the necessary code, only modifying the spot I need to.
      */
-    [HarmonyPatch(typeof(PathFindController))]
-    [HarmonyPatch("moveCharacter")]
     class PFCMoveCharacterPatch
     {
         public static bool Prefix(ref PathFindController __instance, Character ___character, GameTime time)

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using HarmonyLib;
 using StardewValley;
 using Netcode;
 
@@ -12,8 +11,6 @@ namespace ChildToNPC.Patches
      * This is a mix of code from the original method and my own.
      * I use reflection to access private methods in the NPC class.
      */
-    [HarmonyPatch(typeof(NPC))]
-    [HarmonyPatch("checkSchedule")]
     class NPCCheckSchedulePatch
     {
         public static bool Prefix(NPC __instance, int timeOfDay, ref Point ___previousEndPoint, ref string ___extraDialogueMessageToAddThisMorning, ref SchedulePathDescription ___directionsToNewLocation, ref Rectangle ___lastCrossroad, ref NetString ___endOfRouteBehaviorName, ref bool ___returningToEndPoint)
