@@ -40,7 +40,11 @@ namespace ChildToNPC.Patches
                 // ATTENTION: We have to skip that for scheduled times, otherwise schedule and random wandering overlap in a weird way:
                 // The NPCs get warped out of farm house before they reach their random destination points in the house
                 // and thus are doomed to walk around in the BusStop location endlessly without a chance to reach their destination!
-                else if (__instance.controller == null && config.DoChildrenWander && !__instance.Schedule.ContainsKey(Game1.timeOfDay) && Game1.timeOfDay % 100 == 0 && Game1.timeOfDay < config.CurfewTime)
+                else if (__instance.controller == null
+                         && config.DoChildrenWander
+                         && (__instance.Schedule == null || !__instance.Schedule.ContainsKey(Game1.timeOfDay))
+                         && Game1.timeOfDay % 100 == 0
+                         && Game1.timeOfDay < config.CurfewTime)
                 {
                     if (!__instance.currentLocation.Equals(Utility.getHomeOfFarmer(Game1.player)))
                         return true;
