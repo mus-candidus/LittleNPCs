@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewModdingAPI;
+using System;
 
 namespace ChildToNPC.Patches
 {
@@ -33,7 +34,6 @@ namespace ChildToNPC.Patches
         {
             if (!ModEntry.IsChildNPC(__instance))
             {
-                ModEntry.monitor.Log(__instance.Name, LogLevel.Warn);
                 __state = null;
                 return;
             }
@@ -70,6 +70,16 @@ namespace ChildToNPC.Patches
                 __instance.DefaultMap = __state.defaultMap;
                 __instance.DefaultPosition = __state.defaultPosition;
             }
+        }
+
+        /// <summary>
+        /// Error handling - if parseMasterSchedule throws an error, refreshes the default location/
+        /// </summary>
+        /// <param name="__instance">NPC in question</param>
+        /// <param name="__exception">The exception thrown.</param>
+        public static void Finalizer(NPC __instance, Exception __exception)
+        {
+            __instance.reloadDefaultLocation();
         }
     }
 }
