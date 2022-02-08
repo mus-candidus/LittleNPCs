@@ -2,7 +2,6 @@
 using StardewValley;
 using StardewModdingAPI;
 
-#nullable enable
 namespace ChildToNPC.Patches
 {
 
@@ -43,7 +42,7 @@ namespace ChildToNPC.Patches
             // For a Child2NPC, this is always the bus stop, so I can just do the replacement here
             if (rawData.EndsWith("bed"))
             {
-                rawData = rawData.Replace("bed", "BusStop -1 23 3");
+                rawData = rawData[..^3] + "BusStop -1 23 3";
             }
 
             // Save the previous default map and default position.
@@ -74,5 +73,3 @@ namespace ChildToNPC.Patches
         }
     }
 }
-
-#nullable disable
