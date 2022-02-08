@@ -79,7 +79,10 @@ namespace ChildToNPC.Patches
         /// <param name="__exception">The exception thrown.</param>
         public static void Finalizer(NPC __instance, Exception __exception)
         {
-            __instance.reloadDefaultLocation();
+            if (__exception is not null)
+            {
+                __instance.reloadDefaultLocation();
+            }
         }
     }
 }
