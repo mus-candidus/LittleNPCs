@@ -30,7 +30,7 @@ namespace ChildToNPC.Patches
         /// <param name="__instance">NPC</param>
         /// <param name="rawData">Raw schedule string.</param>
         /// <param name="__state">Holds default start location, to restore later.</param>
-        public static void Prefix(NPC __instance, ref string rawData, out DefaultLocation? __state)
+        public static void Prefix(NPC __instance, ref string rawData, out DefaultLocation __state)
         {
             if (!ModEntry.IsChildNPC(__instance))
             {
@@ -63,7 +63,7 @@ namespace ChildToNPC.Patches
         /// <param name="__instance">NPC</param>
         /// <param name="rawData">Raw schedule string.</param>
         /// <param name="__state">Default location for NPC, saved from prefix.</param>
-        public static void Postfix(NPC __instance, string rawData, DefaultLocation? __state)
+        public static void Postfix(NPC __instance, string rawData, DefaultLocation __state)
         {
             if (__state is not null)
             {
