@@ -1,0 +1,11 @@
+# VS Settings
+.vs/
+
+# Intermediate files and binaries
+[Dd]ebug/
+[Rr]elease/
+[Bb]in/
+[Oo]bj/
+
+# Built mod packages
+releases/
