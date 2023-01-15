@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 
 using StardewValley;
+using StardewValley.Characters;
 using StardewValley.Locations;
 
 
@@ -18,11 +19,41 @@ namespace LittleNPCs.Framework {
 
         public int ChildIndex { get; private set; }
 
-        public LittleNPC(IMonitor monitor, long idOfParent, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
+        protected LittleNPC(IMonitor monitor, long idOfParent, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
         : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
             monitor_ = monitor;
             IdOfParent = idOfParent;
             ChildIndex = childIndex;
+        }
+
+        public static LittleNPC FromChild(Child child, IMonitor monitor) {
+            // ATTENTION: We use a separate dictionary for dispositions.
+            // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
+            // We must control NPC creation, however, so we add dispositions from a different dictionary to the created NPC.
+            var litteNpcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/LittleNPCDispositions");
+            var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
+
+            var sprite = new AnimatedSprite($"Characters/{child.Name}", 0, 16, 32);
+            var portrait = Game1.content.Load<Texture2D>($"Portraits/{child.Name}");
+            var npc = new LittleNPC(monitor,
+                                    child.idOfParent.Value,
+                                    child.GetChildIndex(),
+                                    sprite,
+                                    child.Position,
+                                    child.DefaultMap,
+                                    child.FacingDirection,
+                                    child.Name,
+                                    null,
+                                    portrait,
+                                    false);
+
+            // Set dispositions now.
+            npcDispositions[npc.Name] = litteNpcDispositions[npc.Name];
+
+            // Reload schedule.
+            npc.Schedule = npc.getSchedule(Game1.dayOfMonth);
+
+            return npc;
         }
 
         /// <inheritdoc/>

@@ -66,34 +66,12 @@ namespace LittleNPCs {
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var npcs = farmHouse.characters;
-            // ATTENTION: We use a separate dictionary for dispositions.
-            // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
-            // We must control NPC creation, however, so we add dispositions from a different dictionary to the created NPC.
-            var litteNpcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/LittleNPCDispositions");
-            var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
+
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child) {
-                    var sprite = new AnimatedSprite($"Characters/{child.Name}", 0, 16, 32);
-                    var portrait = Game1.content.Load<Texture2D>($"Portraits/{child.Name}");
-                    var npc = new LittleNPC(this.Monitor,
-                                            child.idOfParent.Value,
-                                            child.GetChildIndex(),
-                                            sprite,
-                                            child.Position,
-                                            child.DefaultMap,
-                                            child.FacingDirection,
-                                            child.Name,
-                                            null,
-                                            portrait,
-                                            false);
+                    var npc = LittleNPC.FromChild(child, this.Monitor);
                     npcs[i] = npc;
-
-                    // Set dispositions now.
-                    npcDispositions[npc.Name] = litteNpcDispositions[npc.Name];
-
-                    // Reload schedule.
-                    npc.Schedule = npc.getSchedule(Game1.dayOfMonth);
 
                     this.Monitor.Log($"Replaced child {child.Name} by LittleNPC", LogLevel.Warn);
                 }
