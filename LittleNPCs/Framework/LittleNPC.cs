@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -31,24 +30,23 @@ namespace LittleNPCs.Framework {
             monitor_.Log($"LittleNPC.performTenMinuteUpdate {this.Name} {this.currentLocation}, {Utility.Vector2ToPoint(this.Position / 64f)}", LogLevel.Warn);
 
             FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.player);
-            if (farmHouse.characters.Contains(this))
-            {
+            if (farmHouse.characters.Contains(this)) {
                 ModConfig config = ModEntry.config_;
-                //Send children to bed when inside home
-                if (config.DoChildrenHaveCurfew && Game1.timeOfDay == config.CurfewTime)
-                {
+                // Send children to bed when inside home.
+                if (config.DoChildrenHaveCurfew && Game1.timeOfDay == config.CurfewTime) {
                     IsWalkingInSquare = false;
                     Halt();
                     temporaryController = null;
 
-                    //Child is at home, directly path to bed (DefaultPosition)
+                    // Child is at home, direct path to bed (DefaultPosition).
                     Point bedPoint = new Point((int) DefaultPosition.X / 64, (int) DefaultPosition.Y / 64);
                     controller = new PathFindController(this, farmHouse, bedPoint, 2);
 
-                    if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y))
+                    if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y)) {
                         controller = null;
+                    }
                 }
-                //Make children wander if they have nothing better to do
+                // Make children wander if they have nothing better to do.
                 // ATTENTION: We have to skip that for scheduled times, otherwise schedule and random wandering overlap in a weird way:
                 // The NPCs get warped out of farm house before they reach their random destination points in the house
                 // and thus are doomed to walk around in the BusStop location endlessly without a chance to reach their destination!
@@ -56,18 +54,19 @@ namespace LittleNPCs.Framework {
                          && config.DoChildrenWander
                          && (Schedule is null || !Schedule.ContainsKey(Game1.timeOfDay))
                          && Game1.timeOfDay % 100 == 0
-                         && Game1.timeOfDay < config.CurfewTime)
-                {
-                    if (!currentLocation.Equals(Utility.getHomeOfFarmer(Game1.player)))
+                         && Game1.timeOfDay < config.CurfewTime) {
+                    if (!currentLocation.Equals(Utility.getHomeOfFarmer(Game1.player))) {
                         return;
+                    }
 
                     IsWalkingInSquare = false;
                     Halt();
 
-                    //If I'm going to prevent them from wandering into doorways, I need to do it here.
+                    // If I'm going to prevent them from wandering into doorways, I need to do it here.
                     controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
-                    if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y))
+                    if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y)) {
                         controller = null;
+                    }
                 }
             }
 
