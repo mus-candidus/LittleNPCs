@@ -1,8 +1,15 @@
 ﻿using Microsoft.Xna.Framework;
+
+using StardewModdingAPI;
+
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Network;
 using System;
+
+using LittleNPCs;
+using LittleNPCs.Framework;
+
 
 namespace ChildToNPC.Patches
 {
@@ -14,7 +21,7 @@ namespace ChildToNPC.Patches
     {
         public static bool Prefix(Rectangle position, PathFindController __instance, Character ___character)
         {
-            if (!ModEntry.IsChildNPC(___character))
+            if (!(___character is LittleNPC))
                 return true;
 
             Warp warp = __instance.location.isCollidingWithWarpOrDoor(position);
@@ -29,7 +36,9 @@ namespace ChildToNPC.Patches
             {
                 NPC character = ___character as NPC;
                 if (__instance.location is FarmHouse)
+                {
                     warp = new Warp(warp.X, warp.Y, "BusStop", 0, 23, false);
+                }
                 if (__instance.location is BusStop && warp.X <= 0)
                     warp = new Warp(warp.X, warp.Y, character.getHome().Name, (character.getHome() as FarmHouse).getEntryLocation().X, (character.getHome() as FarmHouse).getEntryLocation().Y, false);
                 if (character.temporaryController != null && character.controller != null)
@@ -56,6 +65,7 @@ namespace ChildToNPC.Patches
             while (__instance.pathToEndPoint.Count > 0 && (Math.Abs(__instance.pathToEndPoint.Peek().X - ___character.getTileX()) > 1 || Math.Abs(__instance.pathToEndPoint.Peek().Y - ___character.getTileY()) > 1))
                 __instance.pathToEndPoint.Pop();
 
+            // Disable original method.
             return false;
         }
     }

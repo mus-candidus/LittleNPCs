@@ -3,6 +3,10 @@ using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Network;
 
+using LittleNPCs;
+using LittleNPCs.Framework;
+
+
 namespace ChildToNPC.Patches
 {
     /* Postfix for arriveAtFarmHouse
@@ -13,7 +17,7 @@ namespace ChildToNPC.Patches
     {
         public static void Postfix(NPC __instance, FarmHouse farmHouse)
         {
-            if (!ModEntry.IsChildNPC(__instance))
+            if (!(__instance is LittleNPC))
                 return;
 
             __instance.setTilePosition(farmHouse.getEntryLocation());
@@ -21,7 +25,7 @@ namespace ChildToNPC.Patches
             __instance.temporaryController = null;
             __instance.controller = null;
             
-            if(ModEntry.Config.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.Config.CurfewTime)
+            if(ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime)
             {
                 Point bedPoint = new Point((int)__instance.DefaultPosition.X / 64, (int)__instance.DefaultPosition.Y / 64);
                 __instance.controller = new PathFindController(__instance, farmHouse, bedPoint, 2);
@@ -36,7 +40,7 @@ namespace ChildToNPC.Patches
             {
                 __instance.willDestroyObjectsUnderfoot = true;
                 __instance.controller = new PathFindController(__instance, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 0);
-                //__instance.setNewDialogue(Game1.LoadStringByGender(__instance.Gender, "Strings\\StringsFromCSFiles:NPC.cs.4500"), false, false);
+                //__instance.setNewDialogue(Game1.LoadStringByGender(__instance.Gender, "Strings/StringsFromCSFiles:NPC.cs.4500"), false, false);
             }
 
             if (Game1.currentLocation == farmHouse)

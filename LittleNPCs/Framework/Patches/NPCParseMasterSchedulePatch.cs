@@ -3,6 +3,10 @@ using StardewValley;
 using StardewModdingAPI;
 using System;
 
+using LittleNPCs;
+using LittleNPCs.Framework;
+
+
 namespace ChildToNPC.Patches
 {
 
@@ -32,11 +36,13 @@ namespace ChildToNPC.Patches
         /// <param name="__state">Holds default start location, to restore later.</param>
         public static void Prefix(NPC __instance, ref string rawData, out DefaultLocation __state)
         {
-            if (!ModEntry.IsChildNPC(__instance))
+            if (!(__instance is LittleNPC))
             {
                 __state = null;
                 return;
             }
+
+            ModEntry.monitor_.Log($"{__instance.Name} inside NPCParseMasterSchedulePatch.Prefix", LogLevel.Warn);
             
             // Scheduling code can use "bed" to refer to the usual last stop of an NPC
             // For a Child2NPC, this is always the bus stop, so I can just do the replacement here

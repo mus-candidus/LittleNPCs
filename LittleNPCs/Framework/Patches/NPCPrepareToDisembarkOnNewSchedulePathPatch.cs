@@ -1,6 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
+
+using StardewModdingAPI;
+
 using StardewValley;
 using StardewValley.Locations;
+
+using LittleNPCs;
+using LittleNPCs.Framework;
+
 
 namespace ChildToNPC.Patches
 {
@@ -16,8 +23,10 @@ namespace ChildToNPC.Patches
     {
         public static void Postfix(NPC __instance)
         {
-            if (!ModEntry.IsChildNPC(__instance))
+            if (!(__instance is LittleNPC))
                 return;
+            
+            ModEntry.monitor_.Log($"LittleNPC inside NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix", LogLevel.Warn);
             
             if(Utility.getGameLocationOfCharacter(__instance) is FarmHouse)
             {

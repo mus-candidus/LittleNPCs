@@ -3,6 +3,12 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using StardewValley.Locations;
 
+using StardewModdingAPI;
+
+using LittleNPCs;
+using LittleNPCs.Framework;
+
+
 namespace ChildToNPC.Patches
 {
     /* Prefix for performTenMinuteUpdate
@@ -15,13 +21,15 @@ namespace ChildToNPC.Patches
     {
         public static bool Prefix(NPC __instance)
         {
-            if (!ModEntry.IsChildNPC(__instance) || !Game1.IsMasterGame)
+            if (!(__instance is LittleNPC) || !Game1.IsMasterGame)
                 return true;
-            
+
+            ModEntry.monitor_.Log($"{__instance.Name} {__instance.currentLocation}, {Utility.Vector2ToPoint(__instance.Position / 64f)}", LogLevel.Warn);
+
             FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.player);
             if (farmHouse.characters.Contains(__instance))
             {
-                ModConfig config = ModEntry.Config;
+                ModConfig config = ModEntry.config_;
                 //Send children to bed when inside home
                 if (config.DoChildrenHaveCurfew && Game1.timeOfDay == config.CurfewTime)
                 {

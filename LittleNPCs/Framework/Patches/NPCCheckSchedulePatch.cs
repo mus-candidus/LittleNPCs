@@ -5,6 +5,10 @@ using Microsoft.Xna.Framework;
 using StardewValley;
 using Netcode;
 
+using LittleNPCs;
+using LittleNPCs.Framework;
+
+
 namespace ChildToNPC.Patches
 {
     /* Prefix for checkSchedule
@@ -15,7 +19,7 @@ namespace ChildToNPC.Patches
     {
         public static bool Prefix(NPC __instance, int timeOfDay, ref Point ___previousEndPoint, ref string ___extraDialogueMessageToAddThisMorning, ref SchedulePathDescription ___directionsToNewLocation, ref Rectangle ___lastCrossroad, ref NetString ___endOfRouteBehaviorName, ref bool ___returningToEndPoint)
         {
-            if (!ModEntry.IsChildNPC(__instance))
+            if (!(__instance is LittleNPC))
                 return true;
 
             if (__instance.currentScheduleDelay == 0f && __instance.scheduleDelaySeconds > 0f)
@@ -49,13 +53,13 @@ namespace ChildToNPC.Patches
                 }
 
                 //If I have curfew, override the normal behavior
-                if (ModEntry.Config.DoChildrenHaveCurfew && !__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse")))
+                if (ModEntry.config_.DoChildrenHaveCurfew && !__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse")))
                 {
                     //Send child home for curfew
-                    if(timeOfDay == ModEntry.Config.CurfewTime)
+                    if(timeOfDay == ModEntry.config_.CurfewTime)
                     {
                         object[] pathfindParams = { __instance.currentLocation.Name, __instance.getTileX(), __instance.getTileY(), "BusStop", -1, 23, 3, null, null };
-                        value = ModEntry.helper
+                        value = ModEntry.helper_
                                         .Reflection
                                         .GetMethod(__instance, "pathfindToNextScheduleLocation", true)
                                         .Invoke<SchedulePathDescription>(pathfindParams);
@@ -81,7 +85,7 @@ namespace ChildToNPC.Patches
                 }
 
                 //prepareToDisembarkOnNewSchedulePath();
-                ModEntry.helper
+                ModEntry.helper_
                         .Reflection
                         .GetMethod(__instance, "prepareToDisembarkOnNewSchedulePath", true)
                         .Invoke(null);
@@ -101,7 +105,7 @@ namespace ChildToNPC.Patches
                 {
                     finalFacingDirection = __instance.DirectionsToNewLocation.facingDirection,
                     //endBehaviorFunction = __instance.getRouteEndBehaviorFunction(__instance.DirectionsToNewLocation.endOfRouteBehavior, __instance.DirectionsToNewLocation.endOfRouteMessage)
-                    endBehaviorFunction = ModEntry.helper
+                    endBehaviorFunction = ModEntry.helper_
                                                   .Reflection
                                                   .GetMethod(__instance, "getRouteEndBehaviorFunction", true)
                                                   .Invoke<PathFindController.endBehavior>(__instance.DirectionsToNewLocation.endOfRouteBehavior, __instance.DirectionsToNewLocation.endOfRouteMessage)
