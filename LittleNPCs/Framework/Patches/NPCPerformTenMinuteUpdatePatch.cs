@@ -9,7 +9,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
     /* Prefix for performTenMinuteUpdate
      * Normally, performTenMinuteUpdate just handles the dialogue bubble while walking.

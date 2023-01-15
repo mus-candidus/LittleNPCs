@@ -7,7 +7,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
 
     public class DefaultLocation

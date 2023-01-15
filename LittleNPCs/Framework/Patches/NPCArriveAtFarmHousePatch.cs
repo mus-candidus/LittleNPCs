@@ -7,7 +7,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
     /* Postfix for arriveAtFarmHouse
      * This code is directly translated from the original method

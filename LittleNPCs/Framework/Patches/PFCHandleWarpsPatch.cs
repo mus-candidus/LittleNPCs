@@ -11,7 +11,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
     /* Postfix for handleWarps
      * Most of this code is directly taken from the original method.

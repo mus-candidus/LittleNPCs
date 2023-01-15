@@ -1,5 +1,5 @@
 ﻿
-namespace LittleNPCs
+namespace LittleNPCs.Framework
 {
     /* ModConfig Options:
      * AgeWhenKidsAreModified: the age at which the CP mod will patch over the child.

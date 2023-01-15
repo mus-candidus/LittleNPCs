@@ -9,7 +9,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
     /* Prefix for checkSchedule
      * This is a mix of code from the original method and my own.

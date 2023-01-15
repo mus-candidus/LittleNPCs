@@ -9,7 +9,7 @@ using LittleNPCs;
 using LittleNPCs.Framework;
 
 
-namespace ChildToNPC.Patches
+namespace LittleNPCs.Framework.Patches
 {
     /* Postfix for prepareToDisembarkOnNewSchedulePath
      * When the postfix comes around, the original will have executed these lines:

@@ -40,33 +40,33 @@ namespace LittleNPCs {
             // NPC.performTenMinuteUpdate patch (prefix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), nameof(NPC.performTenMinuteUpdate)),
-                prefix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCPerformTenMinuteUpdatePatch), nameof(ChildToNPC.Patches.NPCPerformTenMinuteUpdatePatch.Prefix))
+                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCPerformTenMinuteUpdatePatch), nameof(LittleNPCs.Framework.Patches.NPCPerformTenMinuteUpdatePatch.Prefix))
             );
             // NPC.arriveAtFarmHouse (postfix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), nameof(NPC.arriveAtFarmHouse)),
-                postfix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCArriveAtFarmHousePatch), nameof(ChildToNPC.Patches.NPCArriveAtFarmHousePatch.Postfix))
+                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCArriveAtFarmHousePatch), nameof(LittleNPCs.Framework.Patches.NPCArriveAtFarmHousePatch.Postfix))
             );
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), nameof(NPC.checkSchedule)),
-                prefix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCCheckSchedulePatch), nameof(ChildToNPC.Patches.NPCCheckSchedulePatch.Prefix))
+                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCCheckSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCCheckSchedulePatch.Prefix))
             );
             // NPC.parseMasterSchedule patch (prefix, postfix, finalizer).
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), nameof(NPC.parseMasterSchedule)),
-                prefix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCParseMasterSchedulePatch), nameof(ChildToNPC.Patches.NPCParseMasterSchedulePatch.Prefix)),
-                postfix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCParseMasterSchedulePatch), nameof(ChildToNPC.Patches.NPCParseMasterSchedulePatch.Postfix)),
-                finalizer: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCParseMasterSchedulePatch), nameof(ChildToNPC.Patches.NPCParseMasterSchedulePatch.Finalizer))
+                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Prefix)),
+                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Postfix)),
+                finalizer: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Finalizer))
             );
             // NPC.prepareToDisembarkOnNewSchedulePath patch (postfix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), "prepareToDisembarkOnNewSchedulePath"),
-                postfix: new HarmonyMethod(typeof(ChildToNPC.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch), nameof(ChildToNPC.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix))
+                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch), nameof(LittleNPCs.Framework.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix))
             );
             // PathFindController.handleWarps patch (prefix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
-                prefix: new HarmonyMethod(typeof(ChildToNPC.Patches.PFCHandleWarpsPatch), nameof(ChildToNPC.Patches.PFCHandleWarpsPatch.Prefix))
+                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch), nameof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch.Prefix))
             );
         }
 
