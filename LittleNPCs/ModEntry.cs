@@ -1,6 +1,5 @@
 using System.Collections.Generic;
-
-using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
 
 using HarmonyLib;
 
@@ -8,7 +7,9 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 
 using StardewValley;
+using StardewValley.Buildings;
 using StardewValley.Characters;
+using StardewValley.Locations;
 
 using LittleNPCs.Framework;
 
@@ -23,7 +24,6 @@ namespace LittleNPCs {
 
         public static ModConfig config_;
 
-
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
             monitor_ = this.Monitor;
@@ -31,7 +31,8 @@ namespace LittleNPCs {
             // Read config.
             config_ = helper.ReadConfig<ModConfig>();
 
-            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+            helper.Events.GameLoop.DayStarted += OnDayStarted;
+            helper.Events.GameLoop.Saving += OnSaving;
 
             // Create Harmony instance.
             Harmony harmony = new Harmony(this.ModManifest.UniqueID);
@@ -63,23 +64,67 @@ namespace LittleNPCs {
             );
         }
 
-        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
+        private void OnDayStarted(object sender, DayStartedEventArgs e) {
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
+
+            // Getting bed spots must be done before removing any child.
+            var childBedSpotMap = farmHouse.getChildren()
+                                           .ToDictionary(c => c,
+                                                         c => Utility.PointToVector2(farmHouse.GetChildBedSpot(c.GetChildIndex())) * 64f);
+
             var npcs = farmHouse.characters;
 
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child) {
-                    var npc = LittleNPC.FromChild(child, this.Monitor);
-                    npcs[i] = npc;
+                    var littleNPC = LittleNPC.FromChild(child, childBedSpotMap[child], farmHouse, this.Monitor);
+                    npcs[i] = littleNPC;
 
-                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC", LogLevel.Warn);
+                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC, default position {Utility.Vector2ToPoint(child.Position / 64f)}", LogLevel.Warn);
+                }
+            }
+        }
+
+        private void OnSaving(object sender, SavingEventArgs e) {
+            // Local function, only needed here.
+            void ConvertLittleNPCsToChildren(Netcode.NetCollection<NPC> npcs) {
+                // Plain old for-loop because we have to replace list elements.
+                for (int i = 0; i < npcs.Count; ++i) {
+                    if (npcs[i] is LittleNPC littleNPC) {
+                        var child = littleNPC.WrappedChild;
+                        // ATTENTION: By removing children we prevent them from aging properly so we have call dayUpdate() explicitly.
+                        child.dayUpdate(Game1.dayOfMonth);
+                        // Replace LittleNPC by Child object.
+                        npcs[i] = child;
+
+                        this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}", LogLevel.Warn);
+                    }
+                }
+            }
+
+            // ATTENTION: Avoid Utility.getAllCharacters(), replacing elements in the returned list doesn't work.
+            // We have to iterate over all locations instead.
+
+            // Check outdoor locations and convert LittleNPCs back if necessary.
+            foreach (GameLocation location in Game1.locations) {
+                // Plain old for-loop because we have to replace list elements.
+                var npcs = location.characters;
+                ConvertLittleNPCsToChildren(npcs);
+            }
+
+            // Check indoor locations and convert LittleNPCs back if necessary.
+            foreach (BuildableGameLocation location in Game1.locations.OfType<BuildableGameLocation>()) {
+                foreach (Building building in location.buildings) {
+                    if (building.indoors.Value is not null) {
+                        var npcs = building.indoors.Value.characters;
+                        ConvertLittleNPCsToChildren(npcs);
+                    }
                 }
             }
         }
 
         public static long GetFarmerParentId(Character npc) {
-            return (npc is LittleNPC littleNPC) ? littleNPC.IdOfParent : 0; 
+            return (npc is LittleNPC littleNPC) ? littleNPC.WrappedChild.idOfParent.Value : 0; 
         }
     }
 

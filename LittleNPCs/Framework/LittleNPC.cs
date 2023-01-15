@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 
 using StardewValley;
 using StardewValley.Characters;
@@ -15,18 +17,25 @@ namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
         private IMonitor monitor_;
 
-        public long IdOfParent { get; private set; }
+        public Child WrappedChild { get; private set; }
 
-        public int ChildIndex { get; private set; }
-
-        protected LittleNPC(IMonitor monitor, long idOfParent, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
-        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
+        protected LittleNPC(IMonitor monitor, Child child, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor, string syncedPortraitPath = null)
+        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, syncedPortraitPath) {
             monitor_ = monitor;
-            IdOfParent = idOfParent;
-            ChildIndex = childIndex;
+            WrappedChild = child;
+
+            // Set birthday.
+            var birthday = GetBirthday();
+            Birthday_Day = birthday.Day;
+            Birthday_Season = birthday.Season;
+
+            // Set name.
+            this.displayName = this.Name;
+
+            monitor_.Log($"LittleNPC.ctor {Schedule}", LogLevel.Warn);
         }
 
-        public static LittleNPC FromChild(Child child, IMonitor monitor) {
+        public static LittleNPC FromChild(Child child, Vector2 bedSpot, FarmHouse farmHouse, IMonitor monitor) {
             // ATTENTION: We use a separate dictionary for dispositions.
             // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
             // We must control NPC creation, however, so we add dispositions from a different dictionary to the created NPC.
@@ -36,10 +45,9 @@ namespace LittleNPCs.Framework {
             var sprite = new AnimatedSprite($"Characters/{child.Name}", 0, 16, 32);
             var portrait = Game1.content.Load<Texture2D>($"Portraits/{child.Name}");
             var npc = new LittleNPC(monitor,
-                                    child.idOfParent.Value,
-                                    child.GetChildIndex(),
+                                    child,
                                     sprite,
-                                    child.Position,
+                                    bedSpot,
                                     child.DefaultMap,
                                     child.FacingDirection,
                                     child.Name,
@@ -103,6 +111,21 @@ namespace LittleNPCs.Framework {
 
             // Call base method.
             base.performTenMinuteUpdate(timeOfDay, l);
+        }
+
+        public SDate GetBirthday() {
+            SDate birthday;
+
+            try {
+                // Subtract age of child in days from current data.
+                birthday = SDate.Now().AddDays(-WrappedChild.daysOld.Value);
+            }
+            catch (ArithmeticException) {
+                // Fallback.
+                birthday = new SDate(1, "spring");
+            }
+
+            return birthday;
         }
     }
 }
