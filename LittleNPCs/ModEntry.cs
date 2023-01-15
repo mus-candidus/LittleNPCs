@@ -37,11 +37,6 @@ namespace LittleNPCs {
 
             // Create Harmony instance.
             Harmony harmony = new Harmony(this.ModManifest.UniqueID);
-            // NPC.performTenMinuteUpdate patch (prefix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(NPC), nameof(NPC.performTenMinuteUpdate)),
-                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCPerformTenMinuteUpdatePatch), nameof(LittleNPCs.Framework.Patches.NPCPerformTenMinuteUpdatePatch.Prefix))
-            );
             // NPC.arriveAtFarmHouse (postfix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(NPC), nameof(NPC.arriveAtFarmHouse)),
