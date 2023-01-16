@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -24,7 +25,8 @@ namespace LittleNPCs {
 
         public static ModConfig config_;
 
-        public static List<string> LittleNPCNames { get; } = new List<string>();
+        // We have to keep track of LittleNPCs for various reasons.
+        public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
 
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
@@ -35,6 +37,7 @@ namespace LittleNPCs {
 
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.Saving += OnSaving;
+            helper.Events.GameLoop.ReturnedToTitle += (sender, e) => { LittleNPCsList.Clear(); };
 
             // Create Harmony instance.
             Harmony harmony = new Harmony(this.ModManifest.UniqueID);
@@ -74,21 +77,22 @@ namespace LittleNPCs {
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
-            // Getting bed spots must be done before removing any child.
-            var childBedSpotMap = farmHouse.getChildren()
-                                           .ToDictionary(c => c,
-                                                         c => Utility.PointToVector2(farmHouse.GetChildBedSpot(c.GetChildIndex())) * 64f);
+            // Getting child indices must be done before removing any child.
+            var childIndexMap = farmHouse.getChildren()
+                                         .ToDictionary(c => c,
+                                                       c => c.GetChildIndex());
 
             var npcs = farmHouse.characters;
 
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child) {
-                    var littleNPC = LittleNPC.FromChild(child, childBedSpotMap[child], farmHouse, this.Monitor);
+                    var littleNPC = LittleNPC.FromChild(child, childIndexMap[child], farmHouse, this.Monitor);
+                    // Replace Child by LittleNPC object.
                     npcs[i] = littleNPC;
 
                     // Add to tracking list.
-                    LittleNPCNames.Add(littleNPC.Name);
+                    LittleNPCsList.Add(littleNPC);
 
                     this.Monitor.Log($"Replaced child {child.Name} by LittleNPC, default position {Utility.Vector2ToPoint(child.Position / 64f)}", LogLevel.Warn);
                 }
@@ -108,7 +112,7 @@ namespace LittleNPCs {
                         npcs[i] = child;
 
                         // Remove from tracking list.
-                        LittleNPCNames.Remove(littleNPC.Name);
+                        LittleNPCsList.Remove(littleNPC);
 
                         this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}", LogLevel.Warn);
                     }
@@ -134,11 +138,21 @@ namespace LittleNPCs {
                     }
                 }
             }
+
+            Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
         }
 
         public static long GetFarmerParentId(Character npc) {
             return (npc is LittleNPC littleNPC) ? littleNPC.WrappedChild.idOfParent.Value : 0; 
         }
-    }
 
+        /// <summary>
+        /// Custom assert method because <code>Debug.Assert()</code> takes the whole application down. 
+        /// </summary>
+        private static void Assert(bool condition, string message) {
+            if (!condition) {
+                throw new InvalidOperationException(message);
+            }
+        }
+    }
 }

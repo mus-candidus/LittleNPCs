@@ -17,12 +17,24 @@ namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
         private IMonitor monitor_;
 
+        /// <summary>
+        /// Wrapped child object. Required to replace the corresponding LittleNPC object on save.
+        /// </summary>
+        /// <value></value>
         public Child WrappedChild { get; private set; }
 
-        protected LittleNPC(IMonitor monitor, Child child, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor, string syncedPortraitPath = null)
-        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, syncedPortraitPath) {
+        /// <summary>
+        /// Cached child index. The method <code>Child.GetChildIndex()</code>
+        /// becomes useless after removing any child object so we must cache this value.
+        /// </summary>
+        /// <value></value>
+        public int ChildIndex { get; private set; }
+
+        protected LittleNPC(IMonitor monitor, Child child, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
+        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
             monitor_ = monitor;
             WrappedChild = child;
+            ChildIndex = childIndex;
 
             // Set birthday.
             var birthday = GetBirthday();
@@ -35,7 +47,9 @@ namespace LittleNPCs.Framework {
             monitor_.Log($"LittleNPC.ctor {Schedule}", LogLevel.Warn);
         }
 
-        public static LittleNPC FromChild(Child child, Vector2 bedSpot, FarmHouse farmHouse, IMonitor monitor) {
+        public static LittleNPC FromChild(Child child, int childIndex, FarmHouse farmHouse, IMonitor monitor) {
+            Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
+
             // ATTENTION: We use a separate dictionary for dispositions.
             // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
             // We must control NPC creation, however, so we add dispositions from a different dictionary to the created NPC.
@@ -46,6 +60,7 @@ namespace LittleNPCs.Framework {
             var portrait = Game1.content.Load<Texture2D>($"Portraits/{child.Name}");
             var npc = new LittleNPC(monitor,
                                     child,
+                                    childIndex,
                                     sprite,
                                     bedSpot,
                                     child.DefaultMap,
@@ -117,7 +132,7 @@ namespace LittleNPCs.Framework {
             SDate birthday;
 
             try {
-                // Subtract age of child in days from current data.
+                // Subtract age of child in days from current date.
                 birthday = SDate.Now().AddDays(-WrappedChild.daysOld.Value);
             }
             catch (ArithmeticException) {
