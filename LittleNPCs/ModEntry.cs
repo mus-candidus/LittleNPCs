@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Xna.Framework;
+
 using HarmonyLib;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
+using StardewModdingAPI.Utilities;
 
 using StardewValley;
 using StardewValley.Buildings;
@@ -35,6 +38,7 @@ namespace LittleNPCs {
             // Read config.
             config_ = helper.ReadConfig<ModConfig>();
 
+            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += (sender, e) => { LittleNPCsList.Clear(); };
@@ -74,7 +78,90 @@ namespace LittleNPCs {
             );
         }
 
+        private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
+            var api = this.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
+
+            api.RegisterToken(this.ModManifest, "NumberOfLittleNPCs", () => {
+                string count = null;
+                if (Context.IsWorldReady) {
+                    count = ModEntry.LittleNPCsList.Count.ToString();
+                }
+                else {
+                    var children = LittleNPCInfo.GetChildrenFromFarmHouse(true, out FarmHouse farmHouse);
+                    count = children.Count.ToString();
+                }
+
+                return (count is null) ? null : new string[] { count };
+            });
+
+            api.RegisterToken(this.ModManifest, "FirstLittleNPCName", () => {
+                string name = new LittleNPCInfo(0).Name;
+
+                return (name is null) ? null : new string[] { name };
+            });
+
+            api.RegisterToken(this.ModManifest, "FirstLittleNPCGender", () => {
+                string gender = new LittleNPCInfo(0).Gender;
+
+                return (gender is null) ? null : new string[] { gender };
+            });
+
+            api.RegisterToken(this.ModManifest, "FirstLittleNPCBirthday", () => {
+                if (Context.IsWorldReady) {
+                    SDate birthday = new LittleNPCInfo(0).Birthday;
+
+                    return (birthday is null) ? null : new string[] { $"{birthday.Season} {birthday.Day}" };
+                }
+
+                return null;
+            });
+
+            api.RegisterToken(this.ModManifest, "FirstLittleNPCBed", () => {
+                if (Context.IsWorldReady) {
+                    Vector2 bedSpot = new LittleNPCInfo(0).BedSpot;
+
+                    return (bedSpot == Vector2.Zero) ? null : new string[] { $"{bedSpot.X} {bedSpot.Y}" };
+                }
+
+                return null;
+            });
+
+            api.RegisterToken(this.ModManifest, "SecondLittleNPCName", () => {
+                string name = new LittleNPCInfo(1).Name;
+
+                return (name is null) ? null : new string[] { name };
+            });
+
+            api.RegisterToken(this.ModManifest, "SecondLittleNPCGender", () => {
+                string gender = new LittleNPCInfo(1).Gender;
+
+                return (gender is null) ? null : new string[] { gender };
+            });
+
+            api.RegisterToken(this.ModManifest, "SecondLittleNPCBirthday", () => {
+                if (Context.IsWorldReady) {
+                    SDate birthday = new LittleNPCInfo(1).Birthday;
+
+                    return (birthday is null) ? null : new string[] { $"{birthday.Season} {birthday.Day}" };
+                }
+
+                return null;
+            });
+
+            api.RegisterToken(this.ModManifest, "SecondLittleNPCBed", () => {
+                if (Context.IsWorldReady) {
+                    Vector2 bedSpot = new LittleNPCInfo(1).BedSpot;
+
+                    return (bedSpot == Vector2.Zero) ? null : new string[] { $"{bedSpot.X} {bedSpot.Y}" };
+                }
+
+                return null;
+            });
+        }
+
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
+            Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
+
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
             // Getting child indices must be done before removing any child.
@@ -142,8 +229,18 @@ namespace LittleNPCs {
             Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
         }
 
+        /// <summary>
+        /// Required by <code>PFCHandleWarpsPatch</code>.
+        /// </summary>
+        /// <param name="npc"></param>
+        /// <returns></returns>
         public static long GetFarmerParentId(Character npc) {
             return (npc is LittleNPC littleNPC) ? littleNPC.WrappedChild.idOfParent.Value : 0; 
+        }
+
+        internal static LittleNPC GetLittleNPC(int childIndex) {
+            // The list of LittleNPCs is not sorted by child index, thus we need a query.
+            return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
         }
 
         /// <summary>

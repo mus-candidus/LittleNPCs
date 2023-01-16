@@ -142,5 +142,26 @@ namespace LittleNPCs.Framework {
 
             return birthday;
         }
+
+        public static SDate BirthdayFromDays(int daysOld) {
+            try {
+                // Subtract age of child in days from current date.
+                return SDate.Now().AddDays(-daysOld);
+            }
+            catch (ArithmeticException) {
+                // Fallback.
+                return new SDate(1, "spring");
+            }
+        }
+
+        /// <summary>
+        /// Helper function used by constructor.
+        /// </summary>
+        /// <param name="farmHouse"></param>
+        /// <param name="childIndex"></param>
+        /// <returns></returns>
+        public static Vector2 GetBedSpot(FarmHouse farmHouse, int childIndex) {
+            return Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
+        }
     }
 }
