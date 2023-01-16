@@ -24,6 +24,8 @@ namespace LittleNPCs {
 
         public static ModConfig config_;
 
+        public static List<string> LittleNPCNames { get; } = new List<string>();
+
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
             monitor_ = this.Monitor;
@@ -62,6 +64,11 @@ namespace LittleNPCs {
                 original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
                 prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch), nameof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch.Prefix))
             );
+            // Dialogue.checkForSpecialCharacters patch (prefix).
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Dialogue), nameof(Dialogue.checkForSpecialCharacters)),
+                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.DialogueCheckForSpecialCharactersPatch), nameof(LittleNPCs.Framework.Patches.DialogueCheckForSpecialCharactersPatch.Prefix))
+            );
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
@@ -80,6 +87,9 @@ namespace LittleNPCs {
                     var littleNPC = LittleNPC.FromChild(child, childBedSpotMap[child], farmHouse, this.Monitor);
                     npcs[i] = littleNPC;
 
+                    // Add to tracking list.
+                    LittleNPCNames.Add(littleNPC.Name);
+
                     this.Monitor.Log($"Replaced child {child.Name} by LittleNPC, default position {Utility.Vector2ToPoint(child.Position / 64f)}", LogLevel.Warn);
                 }
             }
@@ -96,6 +106,9 @@ namespace LittleNPCs {
                         child.dayUpdate(Game1.dayOfMonth);
                         // Replace LittleNPC by Child object.
                         npcs[i] = child;
+
+                        // Remove from tracking list.
+                        LittleNPCNames.Remove(littleNPC.Name);
 
                         this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}", LogLevel.Warn);
                     }
