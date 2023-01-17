@@ -50,10 +50,6 @@ namespace LittleNPCs.Framework {
         public static LittleNPC FromChild(Child child, int childIndex, FarmHouse farmHouse, IMonitor monitor) {
             Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
 
-            // ATTENTION: We use a separate dictionary for dispositions.
-            // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
-            // We must control NPC creation, however, so we add dispositions from a different dictionary to the created NPC.
-            var litteNpcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/LittleNPCDispositions");
             var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
 
             var sprite = new AnimatedSprite($"Characters/{child.Name}", 0, 16, 32);
@@ -71,7 +67,21 @@ namespace LittleNPCs.Framework {
                                     false);
 
             // Set dispositions now.
-            npcDispositions[npc.Name] = litteNpcDispositions[npc.Name];
+            // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
+            // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
+            // We must control NPC creation, however, so we auto-generate and set dispositions here.
+            // Note that the content pack must not provide NPCDispositions.
+            // It doesn't make sense, anyway: All important data is provided by the save file.
+            // Example: 
+            // child/neutral/outgoing/neutral/male/non-datable/null/Town/summer 23//Farmhouse 23 5/Eric
+            // child/neutral/outgoing/neutral/female/non-datable/null/Town/summer 24//Farmhouse 27 5/Sandra
+            npcDispositions[npc.Name] = $"child/neutral/outgoing/neutral/{(npc.Gender == 0 ? "male": "female")}/non-datable/null/Town/{npc.Birthday_Season} {npc.Birthday_Day}//{npc.DefaultMap} {(int) LittleNPC.GetBedSpot(Utility.getHomeOfFarmer(Game1.player), childIndex).X / 64f} {(int) LittleNPC.GetBedSpot(Utility.getHomeOfFarmer(Game1.player), childIndex).Y / 64f}/{npc.Name}";
+            monitor.Log($"{npcDispositions[npc.Name]}", LogLevel.Warn);
+
+            // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
+            // This is not a problem since we generated dispositions with matching default values beforehand.
+            // We must not call this method in the constructor since it is virtual.
+            npc.reloadData();
 
             // Reload schedule.
             npc.Schedule = npc.getSchedule(Game1.dayOfMonth);
