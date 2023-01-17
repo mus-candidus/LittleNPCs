@@ -41,8 +41,8 @@ namespace LittleNPCs.Framework {
             Birthday_Day = birthday.Day;
             Birthday_Season = birthday.Season;
 
-            // Set name.
-            this.displayName = this.Name;
+            // Set gender.
+            Gender = child.Gender;
 
             monitor_.Log($"LittleNPC.ctor {Schedule}", LogLevel.Warn);
         }
