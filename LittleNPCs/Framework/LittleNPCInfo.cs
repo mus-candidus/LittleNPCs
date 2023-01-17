@@ -18,18 +18,12 @@ namespace LittleNPCs.Framework {
 
         public string Gender { get; private set; }
 
-        public SDate Birthday { get; private set; }
-
-        public Vector2 BedSpot { get; private set; }
-
         public LittleNPCInfo(int childIndex) {
             if (Context.IsWorldReady) {
                 var littleNPC = ModEntry.GetLittleNPC(childIndex);
                 if (littleNPC is not null) {
                     Name = littleNPC.Name;
                     Gender = littleNPC.Gender == 0 ? "male": "female";
-                    Birthday = littleNPC.GetBirthday();
-                    BedSpot = LittleNPC.GetBedSpot(Utility.getHomeOfFarmer(Game1.player), childIndex);
                     ModEntry.monitor_.Log($"GetLittleNPC({childIndex}) returned {Name}", LogLevel.Warn);
                 }
                 else {
@@ -40,8 +34,6 @@ namespace LittleNPCs.Framework {
                     if (count > childIndex) {
                         Name = children[childIndex].Name;
                         Gender = children[childIndex].Gender == 0 ? "male": "female";
-                        Birthday = LittleNPC.BirthdayFromDays(children[childIndex].daysOld.Value);
-                        BedSpot = LittleNPC.GetBedSpot(farmHouse, childIndex);
                         ModEntry.monitor_.Log($"getChildren().Name returned {Name}", LogLevel.Warn);
                     }
                 }
@@ -53,8 +45,6 @@ namespace LittleNPCs.Framework {
                 if (count > childIndex) {
                     Name = children[childIndex].Name;
                     Gender = children[childIndex].Gender == 0 ? "male": "female";
-                    Birthday = LittleNPC.BirthdayFromDays(children[childIndex].daysOld.Value);
-                    BedSpot = LittleNPC.GetBedSpot(farmHouse, childIndex);
                     ModEntry.monitor_.Log($"Save.getChildren().Name returned {Name}", LogLevel.Warn);
                 }
             }
