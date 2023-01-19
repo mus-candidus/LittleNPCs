@@ -111,6 +111,7 @@ namespace LittleNPCs {
 
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
+            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
             // Getting child indices must be done before removing any child.
             var childIndexMap = farmHouse.getChildren()
                                          .ToDictionary(c => c,
@@ -120,7 +121,7 @@ namespace LittleNPCs {
 
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
-                if (npcs[i] is Child child) {
+                if (npcs[i] is Child child && convertibleChildren.Contains(child)) {
                     var littleNPC = LittleNPC.FromChild(child, childIndexMap[child], farmHouse, this.Monitor);
                     // Replace Child by LittleNPC object.
                     npcs[i] = littleNPC;

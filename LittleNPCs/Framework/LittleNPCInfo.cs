@@ -29,7 +29,7 @@ namespace LittleNPCs.Framework {
                 else {
                     // No LittleNPC, try to get Child object.
                     ModEntry.monitor_.Log($"GetLittleNPC({childIndex}) returned null", LogLevel.Warn);
-                    var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse);
+                    var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse).Where(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified).ToList();
                     int count = children.Count;
                     if (count > childIndex) {
                         Name = children[childIndex].Name;
@@ -40,7 +40,7 @@ namespace LittleNPCs.Framework {
             }
             else {
                 // World not ready, load from save.
-                var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse);
+                var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse).Where(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified).ToList();
                 int count = children.Count;
                 if (count > childIndex) {
                     Name = children[childIndex].Name;
