@@ -40,6 +40,7 @@ namespace LittleNPCs {
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
+            helper.Events.GameLoop.TimeChanged += OnTimeChanged;
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += (sender, e) => { LittleNPCsList.Clear(); };
 
@@ -107,6 +108,21 @@ namespace LittleNPCs {
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
+            // ATTENTION: OnDayStarted is too early for child conversion, not all assets are loaded yet.
+            // We have to use OnTimeChanged() at 06:10 instead. The only thing we can do here is puttting
+            // all children about to convert into bed.
+            var farmHouse = Utility.getHomeOfFarmer(Game1.player);
+            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
+            convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
+        }
+
+        private void OnTimeChanged(object sender, TimeChangedEventArgs e) {
+            // Run only once per day at 06:10 .
+            // ATTENTION: This method runs at 06:00 but not on the first day after loading the save!
+            if (e.NewTime != 610) {
+                return;
+            }
+
             Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
 
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);

@@ -66,6 +66,8 @@ namespace LittleNPCs.Framework {
                                     portrait,
                                     false);
 
+            monitor.Log($"LittleNPC.FromChild {child.Name} {GetBedSpot(farmHouse, childIndex)} {childIndex} {child.daysOld.Value}", LogLevel.Warn);
+
             // Set dispositions now.
             // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
             // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
