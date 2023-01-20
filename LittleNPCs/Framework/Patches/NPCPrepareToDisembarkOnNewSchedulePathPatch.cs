@@ -21,8 +21,6 @@ namespace LittleNPCs.Framework.Patches {
             if (__instance is not LittleNPC) {
                 return;
             }
-
-            ModEntry.monitor_.Log($"LittleNPC inside NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix", LogLevel.Warn);
             
             if (Utility.getGameLocationOfCharacter(__instance) is FarmHouse) {
                 __instance.temporaryController = new PathFindController(__instance, __instance.getHome(), new Point(__instance.getHome().warps[0].X, __instance.getHome().warps[0].Y), 2, true) {

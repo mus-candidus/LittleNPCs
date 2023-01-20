@@ -17,8 +17,6 @@ namespace LittleNPCs {
     public class ModEntry : Mod {
         public static IModHelper helper_;
 
-        public static IMonitor monitor_;
-
         public static ModConfig config_;
 
         // We have to track child indices since they change when children are removed.
@@ -27,12 +25,14 @@ namespace LittleNPCs {
         // We have to keep track of LittleNPCs vor various reasons.
         public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
 
-        // The ChildGetChildIndexPatch must be enabled after initial get of child indices.
+        // Check that NPCParseMasterSchedulePatch executed.
+        internal static Dictionary<string, bool> NPCParseMasterSchedulePatchExecuted { get; } = new Dictionary<string, bool>();
+
+        // The ChildGetChildIndexPatch must be enabled or disabled conditionally.
         internal static bool ChildGetChildIndexPatchEnabled { get; set; }
 
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
-            monitor_ = this.Monitor;
 
             // Read config.
             config_ = helper.ReadConfig<ModConfig>();
@@ -62,12 +62,12 @@ namespace LittleNPCs {
             Assert(!childIndexMap_.Any(), $"{nameof(childIndexMap_)} is not empty");
             foreach (var c in farmHouse.getChildren()) {
                 childIndexMap_.Add(c.Name, c.GetChildIndex());
-                this.Monitor.Log($"Get child index for {c.Name}: {childIndexMap_[c.Name]}", LogLevel.Warn);
+                this.Monitor.Log($"Get child index for {c.Name}: {childIndexMap_[c.Name]}");
             }
 
             // Enabling this patch changes the semantics of Child.GetChildIndex() and must be done after filling the map.
             ChildGetChildIndexPatchEnabled = true;
-            this.Monitor.Log("GetChildIndex patch enabled.", LogLevel.Warn);
+            this.Monitor.Log("GetChildIndex patch enabled.");
         }
 
         private void OnTimeChanged(object sender, TimeChangedEventArgs e) {
@@ -95,7 +95,15 @@ namespace LittleNPCs {
                     // Add to tracking list.
                     LittleNPCsList.Add(littleNPC);
 
-                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC, default position {Utility.Vector2ToPoint(child.Position / 64f)}", LogLevel.Warn);
+                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC.", LogLevel.Info);
+
+                    // Check if NPCParseMasterSchedulePatch ran.
+                    if (NPCParseMasterSchedulePatchExecuted.TryGetValue(littleNPC.Name, out bool value) && value) {
+                        this.Monitor.Log($"NPCParseMasterSchedulePatch executed for {littleNPC.Name}.", LogLevel.Info);
+                    }
+                    else {
+                        this.Monitor.Log($"NPCParseMasterSchedulePatch didn't execute for {littleNPC.Name}. Schedules won't work.", LogLevel.Warn);
+                    }
                 }
             }
         }
@@ -115,7 +123,7 @@ namespace LittleNPCs {
                         // Remove from tracking list.
                         LittleNPCsList.Remove(littleNPC);
 
-                        this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}", LogLevel.Warn);
+                        this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}.", LogLevel.Info);
                     }
                 }
             }
@@ -145,7 +153,9 @@ namespace LittleNPCs {
             childIndexMap_.Clear();
 
             ChildGetChildIndexPatchEnabled = false;
-            this.Monitor.Log("GetChildIndex patch disabled.", LogLevel.Warn);
+            this.Monitor.Log("GetChildIndex patch disabled.");
+
+            NPCParseMasterSchedulePatchExecuted.Clear();
         }
 
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
@@ -155,7 +165,9 @@ namespace LittleNPCs {
             childIndexMap_.Clear();
 
             ChildGetChildIndexPatchEnabled = false;
-            this.Monitor.Log("GetChildIndex patch disabled.", LogLevel.Warn);
+            this.Monitor.Log("GetChildIndex patch disabled.");
+
+            NPCParseMasterSchedulePatchExecuted.Clear();
         }
 
         /// <summary>

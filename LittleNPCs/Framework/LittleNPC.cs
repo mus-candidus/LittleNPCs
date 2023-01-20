@@ -43,8 +43,6 @@ namespace LittleNPCs.Framework {
 
             // Set gender.
             Gender = child.Gender;
-
-            monitor_.Log($"LittleNPC.ctor {Schedule}", LogLevel.Warn);
         }
 
         public static LittleNPC FromChild(Child child, int childIndex, FarmHouse farmHouse, IMonitor monitor) {
@@ -66,7 +64,12 @@ namespace LittleNPCs.Framework {
                                     portrait,
                                     false);
 
-            monitor.Log($"LittleNPC.FromChild {child.Name} {bedSpot} {childIndex} {child.daysOld.Value}", LogLevel.Warn);
+            monitor.Log(string.Join(' ',
+                                    $"Created LittleNPC {npc.Name}:",
+                                    $"index {npc.ChildIndex},",
+                                    $"bed spot {Utility.Vector2ToPoint(bedSpot / 64f)},",
+                                    $"birthday {new SDate(npc.Birthday_Day, npc.Birthday_Season)}",
+                                    $"({npc.WrappedChild.daysOld.Value} days ago)"), LogLevel.Info);
 
             // Generate and set NPCDispositions.
             // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
@@ -91,7 +94,7 @@ namespace LittleNPCs.Framework {
                                                     $"{npc.DefaultMap} {(int) bedSpot.X / 64f} {(int) bedSpot.Y / 64f}",
                                                     $"{npc.Name}");
 
-            monitor.Log($"{npcDispositions[npc.Name]}", LogLevel.Warn);
+            monitor.Log($"Created dispositions for {npc.Name}: {npcDispositions[npc.Name]}", LogLevel.Info);
 
             // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
             // This is not a problem since we generated dispositions with matching default values beforehand.
@@ -106,8 +109,6 @@ namespace LittleNPCs.Framework {
 
         /// <inheritdoc/>
         public override void performTenMinuteUpdate(int timeOfDay, GameLocation l) {
-            monitor_.Log($"LittleNPC.performTenMinuteUpdate {this.Name} {this.currentLocation}, {Utility.Vector2ToPoint(this.Position / 64f)}", LogLevel.Warn);
-
             FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.player);
             if (farmHouse.characters.Contains(this)) {
                 ModConfig config = ModEntry.config_;

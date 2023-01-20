@@ -2,8 +2,6 @@ using System;
 
 using Microsoft.Xna.Framework;
 
-using StardewModdingAPI;
-
 using StardewValley;
 
 
@@ -36,7 +34,6 @@ namespace LittleNPCs.Framework.Patches {
                 return;
             }
 
-            ModEntry.monitor_.Log($"{__instance.Name} inside NPCParseMasterSchedulePatch.Prefix", LogLevel.Warn);
             
             // Scheduling code can use "bed" to refer to the usual last stop of an NPC.
             // For a LittleNPC, this is always the bus stop, so I can just do the replacement here.
@@ -66,6 +63,8 @@ namespace LittleNPCs.Framework.Patches {
             if (__state is not null) {
                 __instance.DefaultMap = __state.defaultMap;
                 __instance.DefaultPosition = __state.defaultPosition;
+
+                ModEntry.NPCParseMasterSchedulePatchExecuted[__instance.Name] = true;
             }
         }
 

@@ -8,32 +8,40 @@ namespace LittleNPCs.Framework {
             var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
 
             api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCName", () => {
-                string name = new LittleNPCInfo(0).Name;
+                string name = new LittleNPCInfo(0, modEntry.Monitor).Name;
+
+                modEntry.Monitor.Log($"FirstLittleNPCName() returns {name}");
 
                 return name.ToTokenReturnValue();
             });
 
             api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCGender", () => {
-                string gender = new LittleNPCInfo(0).Gender;
+                string gender = new LittleNPCInfo(0, modEntry.Monitor).Gender;
+
+                modEntry.Monitor.Log($"FirstLittleNPCGender() returns {gender}");
 
                 return gender.ToTokenReturnValue();
             });
 
             api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCName", () => {
-                string name = new LittleNPCInfo(1).Name;
+                string name = new LittleNPCInfo(1, modEntry.Monitor).Name;
+
+                modEntry.Monitor.Log($"SecondLittleNPCName() returns {name}");
 
                 return name.ToTokenReturnValue();
             });
 
             api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCGender", () => {
-                string gender = new LittleNPCInfo(1).Gender;
+                string gender = new LittleNPCInfo(1, modEntry.Monitor).Gender;
+
+                modEntry.Monitor.Log($"SecondLittleNPCGender() returns {gender}");
 
                 return gender.ToTokenReturnValue();
             });
         }
 
         private static IEnumerable<string> ToTokenReturnValue(this string value) {
-            // Required format of CP return values if IEnumerable<string>.
+            // Create an IEnumerable from value as required by CP.
             return string.IsNullOrEmpty(value) ? Enumerable.Empty<string>()
                                                : Enumerable.Repeat(value, 1);
         }
