@@ -1,6 +1,7 @@
 using HarmonyLib;
 
 using StardewValley;
+using StardewValley.Characters;
 
 
 namespace LittleNPCs.Framework {
@@ -39,6 +40,11 @@ namespace LittleNPCs.Framework {
             harmony.Patch(
                 original: AccessTools.Method(typeof(Dialogue), nameof(Dialogue.checkForSpecialCharacters)),
                 prefix:   new HarmonyMethod(typeof(Patches.DialogueCheckForSpecialCharactersPatch), nameof(Patches.DialogueCheckForSpecialCharactersPatch.Prefix))
+            );
+            // Child.GetChildIndex patch (prefix).
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Child), nameof(Child.GetChildIndex)),
+                prefix:   new HarmonyMethod(typeof(Patches.ChildGetChildIndexPatch), nameof(Patches.ChildGetChildIndexPatch.Prefix))
             );
         }
     }

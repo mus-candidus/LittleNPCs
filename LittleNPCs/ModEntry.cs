@@ -21,8 +21,14 @@ namespace LittleNPCs {
 
         public static ModConfig config_;
 
-        // We have to keep track of LittleNPCs for various reasons.
+        // We have to track child indices since they change when children are removed.
+        private static Dictionary<string, int> childIndexMap_ = new Dictionary<string, int>();
+
+        // We have to keep track of LittleNPCs vor various reasons.
         public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
+
+        // The ChildGetChildIndexPatch must be enabled after initial get of child indices.
+        internal static bool ChildGetChildIndexPatchEnabled { get; set; }
 
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
@@ -51,6 +57,17 @@ namespace LittleNPCs {
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
             convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
+
+            // ATTENTION: Getting child indices must be done before removing any child and doesn't depend on age.
+            Assert(!childIndexMap_.Any(), $"{nameof(childIndexMap_)} is not empty");
+            foreach (var c in farmHouse.getChildren()) {
+                childIndexMap_.Add(c.Name, c.GetChildIndex());
+                this.Monitor.Log($"Get child index for {c.Name}: {childIndexMap_[c.Name]}", LogLevel.Warn);
+            }
+
+            // Enabling this patch changes the semantics of Child.GetChildIndex() and must be done after filling the map.
+            ChildGetChildIndexPatchEnabled = true;
+            this.Monitor.Log("GetChildIndex patch enabled.", LogLevel.Warn);
         }
 
         private void OnTimeChanged(object sender, TimeChangedEventArgs e) {
@@ -65,17 +82,13 @@ namespace LittleNPCs {
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
-            // Getting child indices must be done before removing any child.
-            var childIndexMap = farmHouse.getChildren()
-                                         .ToDictionary(c => c,
-                                                       c => c.GetChildIndex());
 
             var npcs = farmHouse.characters;
 
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child && convertibleChildren.Contains(child)) {
-                    var littleNPC = LittleNPC.FromChild(child, childIndexMap[child], farmHouse, this.Monitor);
+                    var littleNPC = LittleNPC.FromChild(child, childIndexMap_[child.Name], farmHouse, this.Monitor);
                     // Replace Child by LittleNPC object.
                     npcs[i] = littleNPC;
 
@@ -128,8 +141,28 @@ namespace LittleNPCs {
             }
 
             Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
+
+            childIndexMap_.Clear();
         }
 
+        /// <summary>
+        /// Gets the index of the given child name from the cache.
+        /// </summary>
+        /// <param name="childName"></param>
+        /// <returns></returns>
+        internal static int GetChildIndex(string childName) {
+            // Return an invalid index if not found. That might cause an error
+            // when happening at the wrong time but gives a hint for debugging at least.
+            int retval = childIndexMap_.TryGetValue(childName, out int childIndex) ? childIndex : -1;
+
+            return retval;
+        }
+
+        /// <summary>
+        /// Gets a LittleNPC by child index.
+        /// </summary>
+        /// <param name="childIndex"></param>
+        /// <returns></returns>
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
