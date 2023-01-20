@@ -41,7 +41,7 @@ namespace LittleNPCs {
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.TimeChanged += OnTimeChanged;
             helper.Events.GameLoop.Saving += OnSaving;
-            helper.Events.GameLoop.ReturnedToTitle += (sender, e) => { LittleNPCsList.Clear(); };
+            helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
 
             HarmonyPatcher.Create(this);
         }
@@ -143,6 +143,19 @@ namespace LittleNPCs {
             Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
 
             childIndexMap_.Clear();
+
+            ChildGetChildIndexPatchEnabled = false;
+            this.Monitor.Log("GetChildIndex patch disabled.", LogLevel.Warn);
+        }
+
+        private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
+            // Clear state before returning to title.
+            LittleNPCsList.Clear();
+
+            childIndexMap_.Clear();
+
+            ChildGetChildIndexPatchEnabled = false;
+            this.Monitor.Log("GetChildIndex patch disabled.", LogLevel.Warn);
         }
 
         /// <summary>
