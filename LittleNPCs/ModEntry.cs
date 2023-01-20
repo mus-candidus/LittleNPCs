@@ -2,13 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.Xna.Framework;
-
-using HarmonyLib;
-
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using StardewModdingAPI.Utilities;
 
 using StardewValley;
 using StardewValley.Buildings;
@@ -19,9 +14,7 @@ using LittleNPCs.Framework;
 
 
 namespace LittleNPCs {
-
     public class ModEntry : Mod {
-
         public static IModHelper helper_;
 
         public static IMonitor monitor_;
@@ -44,67 +37,11 @@ namespace LittleNPCs {
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += (sender, e) => { LittleNPCsList.Clear(); };
 
-            // Create Harmony instance.
-            Harmony harmony = new Harmony(this.ModManifest.UniqueID);
-            // NPC.arriveAtFarmHouse (postfix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(NPC), nameof(NPC.arriveAtFarmHouse)),
-                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCArriveAtFarmHousePatch), nameof(LittleNPCs.Framework.Patches.NPCArriveAtFarmHousePatch.Postfix))
-            );
-            harmony.Patch(
-                original: AccessTools.Method(typeof(NPC), nameof(NPC.checkSchedule)),
-                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCCheckSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCCheckSchedulePatch.Prefix))
-            );
-            // NPC.parseMasterSchedule patch (prefix, postfix, finalizer).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(NPC), nameof(NPC.parseMasterSchedule)),
-                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Prefix)),
-                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Postfix)),
-                finalizer: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch), nameof(LittleNPCs.Framework.Patches.NPCParseMasterSchedulePatch.Finalizer))
-            );
-            // NPC.prepareToDisembarkOnNewSchedulePath patch (postfix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(NPC), "prepareToDisembarkOnNewSchedulePath"),
-                postfix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch), nameof(LittleNPCs.Framework.Patches.NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix))
-            );
-            // PathFindController.handleWarps patch (prefix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
-                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch), nameof(LittleNPCs.Framework.Patches.PFCHandleWarpsPatch.Prefix))
-            );
-            // Dialogue.checkForSpecialCharacters patch (prefix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Dialogue), nameof(Dialogue.checkForSpecialCharacters)),
-                prefix: new HarmonyMethod(typeof(LittleNPCs.Framework.Patches.DialogueCheckForSpecialCharactersPatch), nameof(LittleNPCs.Framework.Patches.DialogueCheckForSpecialCharactersPatch.Prefix))
-            );
+            HarmonyPatcher.Create(this);
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
-            var api = this.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
-
-            api.RegisterToken(this.ModManifest, "FirstLittleNPCName", () => {
-                string name = new LittleNPCInfo(0).Name;
-
-                return (name is null) ? null : new string[] { name };
-            });
-
-            api.RegisterToken(this.ModManifest, "FirstLittleNPCGender", () => {
-                string gender = new LittleNPCInfo(0).Gender;
-
-                return (gender is null) ? null : new string[] { gender };
-            });
-
-            api.RegisterToken(this.ModManifest, "SecondLittleNPCName", () => {
-                string name = new LittleNPCInfo(1).Name;
-
-                return (name is null) ? null : new string[] { name };
-            });
-
-            api.RegisterToken(this.ModManifest, "SecondLittleNPCGender", () => {
-                string gender = new LittleNPCInfo(1).Gender;
-
-                return (gender is null) ? null : new string[] { gender };
-            });
+            ContentPatcherTokens.Register(this);
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
