@@ -18,9 +18,10 @@ namespace LittleNPCs.Framework.Patches {
     /// </summary>
     class NPCPrepareToDisembarkOnNewSchedulePathPatch {
         public static void Postfix(NPC __instance) {
-            if (__instance is not LittleNPC)
+            if (__instance is not LittleNPC) {
                 return;
-            
+            }
+
             ModEntry.monitor_.Log($"LittleNPC inside NPCPrepareToDisembarkOnNewSchedulePathPatch.Postfix", LogLevel.Warn);
             
             if (Utility.getGameLocationOfCharacter(__instance) is FarmHouse) {

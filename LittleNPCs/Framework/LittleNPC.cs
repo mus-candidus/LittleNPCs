@@ -66,18 +66,31 @@ namespace LittleNPCs.Framework {
                                     portrait,
                                     false);
 
-            monitor.Log($"LittleNPC.FromChild {child.Name} {GetBedSpot(farmHouse, childIndex)} {childIndex} {child.daysOld.Value}", LogLevel.Warn);
+            monitor.Log($"LittleNPC.FromChild {child.Name} {bedSpot} {childIndex} {child.daysOld.Value}", LogLevel.Warn);
 
-            // Set dispositions now.
+            // Generate and set NPCDispositions.
             // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
-            // Reason: If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
-            // We must control NPC creation, however, so we auto-generate and set dispositions here.
+            // If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
+            // We must control NPC creation, however, so we generate and set dispositions here.
+            // Fortunately all important data is provided by the save file.
             // Note that the content pack must not provide NPCDispositions.
-            // It doesn't make sense, anyway: All important data is provided by the save file.
             // Example: 
             // child/neutral/outgoing/neutral/male/non-datable/null/Town/summer 23//Farmhouse 23 5/Eric
             // child/neutral/outgoing/neutral/female/non-datable/null/Town/summer 24//Farmhouse 27 5/Sandra
-            npcDispositions[npc.Name] = $"child/neutral/outgoing/neutral/{(npc.Gender == 0 ? "male": "female")}/non-datable/null/Town/{npc.Birthday_Season} {npc.Birthday_Day}//{npc.DefaultMap} {(int) LittleNPC.GetBedSpot(Utility.getHomeOfFarmer(Game1.player), childIndex).X / 64f} {(int) LittleNPC.GetBedSpot(Utility.getHomeOfFarmer(Game1.player), childIndex).Y / 64f}/{npc.Name}";
+            npcDispositions[npc.Name] = string.Join('/',
+                                                    "child",
+                                                    "neutral",
+                                                    "outgoing",
+                                                    "neutral",
+                                                    $"{(npc.Gender == 0 ? "male": "female")}",
+                                                    "non-datable",
+                                                    "null",
+                                                    "Town",
+                                                    $"{npc.Birthday_Season} {npc.Birthday_Day}",
+                                                    "",
+                                                    $"{npc.DefaultMap} {(int) bedSpot.X / 64f} {(int) bedSpot.Y / 64f}",
+                                                    $"{npc.Name}");
+
             monitor.Log($"{npcDispositions[npc.Name]}", LogLevel.Warn);
 
             // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
@@ -153,27 +166,6 @@ namespace LittleNPCs.Framework {
             }
 
             return birthday;
-        }
-
-        public static SDate BirthdayFromDays(int daysOld) {
-            try {
-                // Subtract age of child in days from current date.
-                return SDate.Now().AddDays(-daysOld);
-            }
-            catch (ArithmeticException) {
-                // Fallback.
-                return new SDate(1, "spring");
-            }
-        }
-
-        /// <summary>
-        /// Helper function used by constructor.
-        /// </summary>
-        /// <param name="farmHouse"></param>
-        /// <param name="childIndex"></param>
-        /// <returns></returns>
-        public static Vector2 GetBedSpot(FarmHouse farmHouse, int childIndex) {
-            return Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
         }
     }
 }

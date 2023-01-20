@@ -130,15 +130,6 @@ namespace LittleNPCs {
             Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
         }
 
-        /// <summary>
-        /// Required by <code>PFCHandleWarpsPatch</code>.
-        /// </summary>
-        /// <param name="npc"></param>
-        /// <returns></returns>
-        public static long GetFarmerParentId(Character npc) {
-            return (npc is LittleNPC littleNPC) ? littleNPC.WrappedChild.idOfParent.Value : 0; 
-        }
-
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);

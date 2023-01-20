@@ -2,10 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Microsoft.Xna.Framework;
-
 using StardewModdingAPI;
-using StardewModdingAPI.Utilities;
 
 using StardewValley;
 using StardewValley.Characters;
@@ -29,33 +26,33 @@ namespace LittleNPCs.Framework {
                 else {
                     // No LittleNPC, try to get Child object.
                     ModEntry.monitor_.Log($"GetLittleNPC({childIndex}) returned null", LogLevel.Warn);
-                    var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse).Where(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified).ToList();
-                    int count = children.Count;
-                    if (count > childIndex) {
-                        Name = children[childIndex].Name;
-                        Gender = children[childIndex].Gender == 0 ? "male": "female";
+                    var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse);
+                    Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
+                    if (child is not null) {
+                        Name = child.Name;
+                        Gender = child.Gender == 0 ? "male": "female";
                         ModEntry.monitor_.Log($"getChildren().Name returned {Name}", LogLevel.Warn);
                     }
                 }
             }
             else {
                 // World not ready, load from save.
-                var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse).Where(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified).ToList();
-                int count = children.Count;
-                if (count > childIndex) {
-                    Name = children[childIndex].Name;
-                    Gender = children[childIndex].Gender == 0 ? "male": "female";
+                var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse);
+                Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
+                if (child is not null) {
+                    Name = child.Name;
+                    Gender = child.Gender == 0 ? "male": "female";
                     ModEntry.monitor_.Log($"Save.getChildren().Name returned {Name}", LogLevel.Warn);
                 }
             }
         }
 
-        internal static IList<Child> GetChildrenFromFarmHouse(bool loadFromSave, out FarmHouse farmHouse) {
+        private static IEnumerable<Child> GetChildrenFromFarmHouse(bool loadFromSave, out FarmHouse farmHouse) {
             farmHouse = loadFromSave ? SaveGame.loaded?.locations.OfType<FarmHouse>().FirstOrDefault(l => l.Name == "FarmHouse")
                                      : Utility.getHomeOfFarmer(Game1.player);
             
-            return farmHouse is not null ? farmHouse.getChildren().OrderBy(c => c.GetChildIndex()).ToList()
-                                         : Array.Empty<Child>();
+            return farmHouse is not null ? farmHouse.getChildren()
+                                         : Enumerable.Empty<Child>();
         }
     }
 }
