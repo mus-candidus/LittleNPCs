@@ -2,7 +2,7 @@
   "Name": "LittleNPCs",
   "Author": "Candidus42",
   "Version": "1.0.0",
-  "Description": "Turns your cildren into little NPCs.",
+  "Description": "Turns your children into little NPCs.",
   "UniqueID": "Candidus42.LittleNPCs",
   "EntryDll": "LittleNPCs.dll",
   "MinimumApiVersion": "3.14.0",
@@ -13,5 +13,5 @@
       "IsRequired": true
     }
   ],
-  "UpdateKeys": []
+  "UpdateKeys": [ "Nexus: 15152" ]
 }
