@@ -53,10 +53,10 @@ namespace LittleNPCs.Framework.Patches {
             Game1.warpCharacter(littleNPC, __instance.location, new Vector2(warp.TargetX, warp.TargetY));
 
             if (__instance.isPlayerPresent() && __instance.location.doors.ContainsKey(new Point(warp.X, warp.Y))) {
-                __instance.location.playSoundAt("doorClose", new Vector2(warp.X, warp.Y), NetAudio.SoundContext.NPC);
+                __instance.location.playSound("doorClose", new Vector2(warp.X, warp.Y), null, NetAudio.SoundContext.NPC);
             }
             if (__instance.isPlayerPresent() && __instance.location.doors.ContainsKey(new Point(warp.TargetX, warp.TargetY - 1))) {
-                __instance.location.playSoundAt("doorClose", new Vector2(warp.TargetX, warp.TargetY), NetAudio.SoundContext.NPC);
+                __instance.location.playSound("doorClose", new Vector2(warp.TargetX, warp.TargetY), null, NetAudio.SoundContext.NPC);
             }
             if (__instance.pathToEndPoint.Count > 0) {
                 __instance.pathToEndPoint.Pop();

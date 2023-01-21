@@ -46,7 +46,7 @@ namespace LittleNPCs.Framework.Patches {
                     __instance.lastAttemptedSchedule = timeOfDay;
                     __instance.Schedule.TryGetValue(timeOfDay, out value);
                     if (value is not null) {
-                        __instance.queuedSchedulePaths.Add(new KeyValuePair<int, SchedulePathDescription>(timeOfDay, value));
+                        __instance.queuedSchedulePaths.Add(value);
                     }
                     value = null;
                 }
@@ -61,7 +61,7 @@ namespace LittleNPCs.Framework.Patches {
                                         .GetMethod(__instance, "pathfindToNextScheduleLocation", true)
                                         .Invoke<SchedulePathDescription>(pathfindParams);
                         __instance.queuedSchedulePaths.Clear();
-                        __instance.queuedSchedulePaths.Add(new KeyValuePair<int, SchedulePathDescription>(timeOfDay, value));
+                        __instance.queuedSchedulePaths.Add(value);
                     }
                     value = null;
                 }
@@ -70,8 +70,8 @@ namespace LittleNPCs.Framework.Patches {
                     return false;
                 }
 
-                if (__instance.queuedSchedulePaths.Count > 0 && timeOfDay >= __instance.queuedSchedulePaths[0].Key) {
-                    value = __instance.queuedSchedulePaths[0].Value;
+                if (__instance.queuedSchedulePaths.Count > 0 && timeOfDay >= __instance.queuedSchedulePaths[0].time) {
+                    value = __instance.queuedSchedulePaths[0];
                 }
 
                 if (value is null) {

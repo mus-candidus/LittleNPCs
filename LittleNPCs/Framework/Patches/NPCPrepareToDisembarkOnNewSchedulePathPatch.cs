@@ -28,7 +28,7 @@ namespace LittleNPCs.Framework.Patches {
                 };
                 if (__instance.temporaryController.pathToEndPoint is null || __instance.temporaryController.pathToEndPoint.Count <= 0) {
                     __instance.temporaryController = null;
-                    __instance.Schedule = null;
+                    __instance.ClearSchedule();
                 }
                 else {
                     __instance.followSchedule = true;
@@ -36,7 +36,7 @@ namespace LittleNPCs.Framework.Patches {
             }
             else if (Utility.getGameLocationOfCharacter(__instance) is Farm) {
                 __instance.temporaryController = null;
-                __instance.Schedule = null;
+                __instance.ClearSchedule();
             }
         }
     }

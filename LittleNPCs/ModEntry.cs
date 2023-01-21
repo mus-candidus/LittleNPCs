@@ -139,7 +139,7 @@ namespace LittleNPCs {
             }
 
             // Check indoor locations and convert LittleNPCs back if necessary.
-            foreach (BuildableGameLocation location in Game1.locations.OfType<BuildableGameLocation>()) {
+            foreach (DecoratableLocation location in Game1.locations.OfType<DecoratableLocation>()) {
                 foreach (Building building in location.buildings) {
                     if (building.indoors.Value is not null) {
                         var npcs = building.indoors.Value.characters;

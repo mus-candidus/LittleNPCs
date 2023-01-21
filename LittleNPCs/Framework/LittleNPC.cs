@@ -102,7 +102,8 @@ namespace LittleNPCs.Framework {
             npc.reloadData();
 
             // Reload schedule.
-            npc.Schedule = npc.getSchedule(Game1.dayOfMonth);
+            string success = npc.TryLoadSchedule() ? "successfully" : "unsuccessfully";
+            monitor.Log($"Schedule or {npc.Name} loaded {success}.", LogLevel.Info);
 
             return npc;
         }

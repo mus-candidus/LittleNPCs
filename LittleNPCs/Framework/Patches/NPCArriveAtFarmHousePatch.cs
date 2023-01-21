@@ -36,7 +36,7 @@ namespace LittleNPCs.Framework.Patches {
             }
 
             if (Game1.currentLocation == farmHouse) {
-                Game1.currentLocation.playSound("doorClose", NetAudio.SoundContext.NPC);
+                Game1.currentLocation.playSound("doorClose", null, null, NetAudio.SoundContext.NPC);
             }
         }
     }
