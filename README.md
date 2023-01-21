@@ -4,7 +4,7 @@ Mod for [Stardew Valley](http://stardewvalley.net/) which turns your children in
 
 **Create a content pack**
 
-Replacement NPCs for your children must be provided by content packs. See [NPC data](https://stardewvalleywiki.com/Modding:NPC_data). Note that NPCDispositoons must not be provided by your content pack, these are generated and handled internally by the mod.
+Replacement NPCs for your children must be provided by content packs. See [NPC data](https://stardewvalleywiki.com/Modding:NPC_data). Note that NPCDispositions must not be provided by your content pack, these are generated and handled internally by the mod.
 
 The mod provides 4 ContentPatcher tokens:
 
@@ -18,6 +18,9 @@ In your content pack, use these tokens instead of hard-coded names and genders.
 **Convert a ChildToNPC content pack**
 
 Content packs for the unmaintained [ChildToNPC](https://www.nexusmods.com/stardewvalley/mods/4568) mod are supposed to be easily convertible, even though some tokens are not provided.
+
+Remove `Data/NPCDispositions` from your content pack first. For replacing tokens see the following table:
+
 
 | Child2NPC token     | LittleNPC token       | Notes                                                         |
 |:--------------------|:----------------------|:--------------------------------------------------------------|
