@@ -92,6 +92,11 @@ namespace LittleNPCs {
                     // Replace Child by LittleNPC object.
                     npcs[i] = littleNPC;
 
+                    // Copy friendship data.
+                    if (Game1.player.friendshipData.TryGetValue(child.Name, out var friendship)) {
+                        Game1.player.friendshipData[littleNPC.Name] = friendship;
+                    }
+
                     // Add to tracking list.
                     LittleNPCsList.Add(littleNPC);
 
@@ -119,6 +124,11 @@ namespace LittleNPCs {
                         child.dayUpdate(Game1.dayOfMonth);
                         // Replace LittleNPC by Child object.
                         npcs[i] = child;
+
+                        // Copy friendship data.
+                        if (Game1.player.friendshipData.TryGetValue(littleNPC.Name, out var friendship)) {
+                            Game1.player.friendshipData[child.Name] = friendship;
+                        }
 
                         // Remove from tracking list.
                         LittleNPCsList.Remove(littleNPC);
