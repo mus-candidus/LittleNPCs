@@ -30,7 +30,7 @@ namespace LittleNPCs.Framework {
         /// <value></value>
         public int ChildIndex { get; private set; }
 
-        protected LittleNPC(IMonitor monitor, Child child, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
+        protected LittleNPC(IMonitor monitor, Child child, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, string displayName, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
         : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
             monitor_ = monitor;
             WrappedChild = child;
@@ -43,15 +43,20 @@ namespace LittleNPCs.Framework {
 
             // Set gender.
             Gender = child.Gender;
+
+            // Set displayName.
+            this.displayName = displayName;
         }
 
         public static LittleNPC FromChild(Child child, int childIndex, FarmHouse farmHouse, IMonitor monitor) {
             Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
 
+            string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+
             var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
 
-            var sprite = new AnimatedSprite($"Characters/{child.Name}", 0, 16, 32);
-            var portrait = Game1.content.Load<Texture2D>($"Portraits/{child.Name}");
+            var sprite = new AnimatedSprite($"Characters/{prefix}{child.Name}", 0, 16, 32);
+            var portrait = Game1.content.Load<Texture2D>($"Portraits/{prefix}{child.Name}");
             var npc = new LittleNPC(monitor,
                                     child,
                                     childIndex,
@@ -59,6 +64,7 @@ namespace LittleNPCs.Framework {
                                     bedSpot,
                                     child.DefaultMap,
                                     child.FacingDirection,
+                                    $"{prefix}{child.Name}",
                                     child.Name,
                                     null,
                                     portrait,
@@ -92,7 +98,7 @@ namespace LittleNPCs.Framework {
                                                     $"{npc.Birthday_Season} {npc.Birthday_Day}",
                                                     "",
                                                     $"{npc.DefaultMap} {(int) bedSpot.X / 64f} {(int) bedSpot.Y / 64f}",
-                                                    $"{npc.Name}");
+                                                    $"{npc.displayName}");
 
             monitor.Log($"Created dispositions for {npc.Name}: {npcDispositions[npc.Name]}", LogLevel.Info);
 

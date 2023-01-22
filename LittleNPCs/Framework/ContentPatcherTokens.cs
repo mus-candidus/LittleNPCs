@@ -8,7 +8,7 @@ namespace LittleNPCs.Framework {
             var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
 
             api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCName", () => {
-                string name = new LittleNPCInfo(0, modEntry.Monitor).Name;
+                string name = $"FirstLittleNPC{new LittleNPCInfo(0, modEntry.Monitor).Name}";
 
                 modEntry.Monitor.Log($"FirstLittleNPCName() returns {name}");
 
@@ -24,7 +24,7 @@ namespace LittleNPCs.Framework {
             });
 
             api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCName", () => {
-                string name = new LittleNPCInfo(1, modEntry.Monitor).Name;
+                string name = $"SecondLittleNPC{new LittleNPCInfo(1, modEntry.Monitor).Name}";
 
                 modEntry.Monitor.Log($"SecondLittleNPCName() returns {name}");
 

@@ -95,7 +95,7 @@ namespace LittleNPCs {
                     // Add to tracking list.
                     LittleNPCsList.Add(littleNPC);
 
-                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC.", LogLevel.Info);
+                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC {littleNPC.Name}.", LogLevel.Info);
 
                     // Check if NPCParseMasterSchedulePatch ran.
                     if (NPCParseMasterSchedulePatchExecuted.TryGetValue(littleNPC.Name, out bool value) && value) {
@@ -123,7 +123,7 @@ namespace LittleNPCs {
                         // Remove from tracking list.
                         LittleNPCsList.Remove(littleNPC);
 
-                        this.Monitor.Log($"Replaced LittleNPC in {npcs[i].currentLocation.Name} by child {child.Name}.", LogLevel.Info);
+                        this.Monitor.Log($"Replaced LittleNPC {littleNPC.Name} in {npcs[i].currentLocation.Name} by child {child.Name}.", LogLevel.Info);
                     }
                 }
             }
