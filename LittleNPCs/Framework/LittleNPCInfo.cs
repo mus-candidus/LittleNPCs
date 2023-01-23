@@ -15,6 +15,8 @@ namespace LittleNPCs.Framework {
 
         public string Name { get; private set; }
 
+        public string DisplayName { get; private set; }
+
         public string Gender { get; private set; }
 
         public LittleNPCInfo(int childIndex, IMonitor monitor) {
@@ -22,7 +24,9 @@ namespace LittleNPCs.Framework {
             if (Context.IsWorldReady) {
                 var littleNPC = ModEntry.GetLittleNPC(childIndex);
                 if (littleNPC is not null) {
+                    // Internal asset name of a LittleNPC already has a prefix.
                     Name = littleNPC.Name;
+                    DisplayName = littleNPC.displayName;
                     Gender = littleNPC.Gender == 0 ? "male": "female";
                     monitor_.Log($"GetLittleNPC({childIndex}) returns {Name}");
                 }
@@ -32,12 +36,15 @@ namespace LittleNPCs.Framework {
                     var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse);
                     Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
                     if (child is not null) {
-                        Name = child.Name;
+                        // Internal asset name to create a LittleNPC from needs a prefix.
+                        string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+                        Name = $"{prefix}{child.Name}";
+                        DisplayName = child.Name;
                         Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for child with {childIndex} returns {Name}");
+                        monitor_.Log($"Query for child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for child with {childIndex} returns null");
+                        monitor_.Log($"Query for child with index {childIndex} returns null");
                     }
                 }
             }
@@ -46,12 +53,15 @@ namespace LittleNPCs.Framework {
                 var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse);
                 Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
                 if (child is not null) {
-                    Name = child.Name;
+                    // Internal asset name to create a LittleNPC from needs a prefix.
+                    string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+                    Name = $"{prefix}{child.Name}";
+                    DisplayName = child.Name;
                     Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for child with {childIndex} returns {Name}");
+                        monitor_.Log($"Query for child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for child with {childIndex} returns null");
+                        monitor_.Log($"Query for child with index {childIndex} returns null");
                     }
             }
         }
