@@ -6,7 +6,7 @@ Mod for [Stardew Valley](http://stardewvalley.net/) which turns your children in
 
 Replacement NPCs for your children must be provided by content packs. See [NPC data](https://stardewvalleywiki.com/Modding:NPC_data). Note that NPCDispositions must not be provided by your content pack, these are generated and handled internally by the mod.
 
-The mod provides 4 ContentPatcher tokens:
+The mod provides 6 ContentPatcher tokens:
 
 * Candidus42.LittleNPCs/FirstLittleNPCName
 * Candidus42.LittleNPCs/FirstLittleNPCDisplayName
