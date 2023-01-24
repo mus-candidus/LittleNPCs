@@ -25,9 +25,6 @@ namespace LittleNPCs {
         // We have to keep track of LittleNPCs vor various reasons.
         public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
 
-        // Check that NPCParseMasterSchedulePatch executed.
-        internal static Dictionary<string, bool> NPCParseMasterSchedulePatchExecuted { get; } = new Dictionary<string, bool>();
-
         // The ChildGetChildIndexPatch must be enabled or disabled conditionally.
         internal static bool ChildGetChildIndexPatchEnabled { get; set; }
 
@@ -101,19 +98,13 @@ namespace LittleNPCs {
                     LittleNPCsList.Add(littleNPC);
 
                     this.Monitor.Log($"Replaced child {child.Name} by LittleNPC {littleNPC.Name}.", LogLevel.Info);
-
-                    // Check if NPCParseMasterSchedulePatch ran.
-                    if (NPCParseMasterSchedulePatchExecuted.TryGetValue(littleNPC.Name, out bool value) && value) {
-                        this.Monitor.Log($"NPCParseMasterSchedulePatch executed for {littleNPC.Name}.", LogLevel.Info);
-                    }
-                    else {
-                        this.Monitor.Log($"NPCParseMasterSchedulePatch didn't execute for {littleNPC.Name}. Schedules won't work.", LogLevel.Warn);
-                    }
                 }
             }
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
+            var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
+
             // Local function, only needed here.
             void ConvertLittleNPCsToChildren(Netcode.NetCollection<NPC> npcs) {
                 // Plain old for-loop because we have to replace list elements.
@@ -129,6 +120,9 @@ namespace LittleNPCs {
                         if (Game1.player.friendshipData.TryGetValue(littleNPC.Name, out var friendship)) {
                             Game1.player.friendshipData[child.Name] = friendship;
                         }
+
+                        // Remove NPCDispositions to prevent auto-load on next day.
+                        npcDispositions.Remove(littleNPC.Name);
 
                         // Remove from tracking list.
                         LittleNPCsList.Remove(littleNPC);
@@ -164,8 +158,6 @@ namespace LittleNPCs {
 
             ChildGetChildIndexPatchEnabled = false;
             this.Monitor.Log("GetChildIndex patch disabled.");
-
-            NPCParseMasterSchedulePatchExecuted.Clear();
         }
 
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
@@ -176,8 +168,6 @@ namespace LittleNPCs {
 
             ChildGetChildIndexPatchEnabled = false;
             this.Monitor.Log("GetChildIndex patch disabled.");
-
-            NPCParseMasterSchedulePatchExecuted.Clear();
         }
 
         /// <summary>

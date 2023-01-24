@@ -17,6 +17,9 @@ namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
         private IMonitor monitor_;
 
+        // Check that NPCParseMasterSchedulePatch executed.
+        internal bool ParseMasterSchedulePatchExecuted { get; set; }
+
         /// <summary>
         /// Wrapped child object. Required to replace the corresponding LittleNPC object on save.
         /// </summary>
@@ -109,6 +112,19 @@ namespace LittleNPCs.Framework {
 
             // Reload schedule.
             npc.Schedule = npc.getSchedule(Game1.dayOfMonth);
+
+            // Check if NPCParseMasterSchedulePatch ran.
+            if (npc.ParseMasterSchedulePatchExecuted) {
+                monitor.Log($"NPCParseMasterSchedulePatch executed for {npc.Name}.", LogLevel.Info);
+            }
+            else {
+                monitor.Log($"NPCParseMasterSchedulePatch didn't execute for {npc.Name}. Schedule won't work.", LogLevel.Warn);
+
+                // NPC's default location might have been messed up on error.
+                npc.reloadDefaultLocation();
+
+                monitor.Log($"Reset default location of {npc.Name} to {npc.DefaultMap}, {Utility.Vector2ToPoint(npc.DefaultPosition / 64f)}.", LogLevel.Warn);
+            }
 
             return npc;
         }
