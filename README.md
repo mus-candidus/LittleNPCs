@@ -9,8 +9,10 @@ Replacement NPCs for your children must be provided by content packs. See [NPC d
 The mod provides 4 ContentPatcher tokens:
 
 * Candidus42.LittleNPCs/FirstLittleNPCName
+* Candidus42.LittleNPCs/FirstLittleNPCDisplayName
 * Candidus42.LittleNPCs/FirstLittleNPCGender
 * Candidus42.LittleNPCs/SecondLittleNPCName
+* Candidus42.LittleNPCs/SecondLittleNPCDisplayName
 * Candidus42.LittleNPCs/SecondLittleNPCGender
 
 In your content pack, use these tokens instead of hard-coded names and genders.
