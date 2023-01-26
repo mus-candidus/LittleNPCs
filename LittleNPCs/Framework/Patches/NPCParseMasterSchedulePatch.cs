@@ -64,7 +64,7 @@ namespace LittleNPCs.Framework.Patches {
                 __instance.DefaultMap = __state.defaultMap;
                 __instance.DefaultPosition = __state.defaultPosition;
 
-                ModEntry.NPCParseMasterSchedulePatchExecuted[__instance.Name] = true;
+                (__instance as LittleNPC).ParseMasterSchedulePatchExecuted = true;
             }
         }
 

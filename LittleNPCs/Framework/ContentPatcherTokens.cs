@@ -15,6 +15,14 @@ namespace LittleNPCs.Framework {
                 return name.ToTokenReturnValue();
             });
 
+            api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCDisplayName", () => {
+                string displayName = new LittleNPCInfo(0, modEntry.Monitor).DisplayName;
+
+                modEntry.Monitor.Log($"FirstLittleNPCDisplayName() returns {displayName}");
+
+                return displayName.ToTokenReturnValue();
+            });
+
             api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCGender", () => {
                 string gender = new LittleNPCInfo(0, modEntry.Monitor).Gender;
 
@@ -29,6 +37,14 @@ namespace LittleNPCs.Framework {
                 modEntry.Monitor.Log($"SecondLittleNPCName() returns {name}");
 
                 return name.ToTokenReturnValue();
+            });
+
+            api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCDisplayName", () => {
+                string displayName = new LittleNPCInfo(1, modEntry.Monitor).DisplayName;
+
+                modEntry.Monitor.Log($"SecondLittleNPCDisplayName() returns {displayName}");
+
+                return displayName.ToTokenReturnValue();
             });
 
             api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCGender", () => {
