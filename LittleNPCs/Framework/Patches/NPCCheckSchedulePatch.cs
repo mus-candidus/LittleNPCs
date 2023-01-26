@@ -55,11 +55,7 @@ namespace LittleNPCs.Framework.Patches {
                 if (ModEntry.config_.DoChildrenHaveCurfew && !__instance.currentLocation.Equals(Game1.getLocationFromName("FarmHouse"))) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
-                        object[] pathfindParams = { __instance.currentLocation.Name, __instance.getTileX(), __instance.getTileY(), "BusStop", -1, 23, 3, null, null };
-                        value = ModEntry.helper_
-                                        .Reflection
-                                        .GetMethod(__instance, "pathfindToNextScheduleLocation", true)
-                                        .Invoke<SchedulePathDescription>(pathfindParams);
+                        value = __instance.pathfindToNextScheduleLocation(__instance.currentLocation.Name, (int) __instance.Tile.X, (int) __instance.Tile.Y, "BusStop", -1, 23, 3, null, null);
                         __instance.queuedSchedulePaths.Clear();
                         __instance.queuedSchedulePaths.Add(value);
                     }

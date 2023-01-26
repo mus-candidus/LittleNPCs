@@ -61,8 +61,9 @@ namespace LittleNPCs.Framework.Patches {
             if (__instance.pathToEndPoint.Count > 0) {
                 __instance.pathToEndPoint.Pop();
             }
-            while (__instance.pathToEndPoint.Count > 0 && (Math.Abs(__instance.pathToEndPoint.Peek().X - littleNPC.getTileX()) > 1 || Math.Abs(__instance.pathToEndPoint.Peek().Y - littleNPC.getTileY()) > 1)) {
-                __instance.pathToEndPoint.Pop();
+            Point tilePoint = littleNPC.TilePoint;
+            while (__instance.pathToEndPoint.Count > 0 && (Math.Abs(__instance.pathToEndPoint.Peek().X - tilePoint.X) > 1 || Math.Abs(__instance.pathToEndPoint.Peek().Y - tilePoint.Y) > 1)) {
+				__instance.pathToEndPoint.Pop();
             }
 
             // Disable original method.
