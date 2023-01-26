@@ -9,6 +9,7 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.GameData.Characters;
 
 using LittleNPCs.Framework;
 
@@ -103,7 +104,7 @@ namespace LittleNPCs {
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
-            var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
+            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
             // Local function, only needed here.
             void ConvertLittleNPCsToChildren(Netcode.NetCollection<NPC> npcs) {

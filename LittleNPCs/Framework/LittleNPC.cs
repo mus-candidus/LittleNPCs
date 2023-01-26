@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.GameData.Characters;
 
 
 namespace LittleNPCs.Framework {
@@ -56,7 +57,7 @@ namespace LittleNPCs.Framework {
 
             string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
 
-            var npcDispositions = Game1.content.Load<Dictionary<string, string>>("Data/NPCDispositions");
+            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
             var sprite = new AnimatedSprite($"Characters/{prefix}{child.Name}", 0, 16, 32);
             var portrait = Game1.content.Load<Texture2D>($"Portraits/{prefix}{child.Name}");
@@ -89,19 +90,21 @@ namespace LittleNPCs.Framework {
             // Example: 
             // child/neutral/outgoing/neutral/male/non-datable/null/Town/summer 23//Farmhouse 23 5/Eric
             // child/neutral/outgoing/neutral/female/non-datable/null/Town/summer 24//Farmhouse 27 5/Sandra
-            npcDispositions[npc.Name] = string.Join('/',
-                                                    "child",
-                                                    "neutral",
-                                                    "outgoing",
-                                                    "neutral",
-                                                    $"{(npc.Gender == 0 ? "male": "female")}",
-                                                    "non-datable",
-                                                    "null",
-                                                    "Town",
-                                                    $"{npc.Birthday_Season} {npc.Birthday_Day}",
-                                                    "",
-                                                    $"{npc.DefaultMap} {(int) bedSpot.X / 64f} {(int) bedSpot.Y / 64f}",
-                                                    $"{npc.displayName}");
+            var characterData = new CharacterData();
+            characterData.Age = NpcAge.Child;
+            characterData.Manner = NpcManner.Neutral;
+            characterData.SocialAnxiety = NpcSocialAnxiety.Outgoing;
+            characterData.Optimism = NpcOptimism.Neutral;
+            characterData.Gender = npc.Gender == 0 ? NpcGender.Male : NpcGender.Female;
+            characterData.CanBeRomanced = false;
+            characterData.HomeRegion = "Town";
+            characterData.BirthSeason = npc.Birthday_Season;
+            characterData.BirthDay = npc.Birthday_Day;
+            characterData.HomeLocation = npc.DefaultMap;
+            characterData.HomeTile = Utility.Vector2ToPoint(bedSpot / 64f);
+            characterData.DisplayName = npc.displayName;
+
+            npcDispositions[npc.Name] = characterData;
 
             monitor.Log($"Created dispositions for {npc.Name}: {npcDispositions[npc.Name]}", LogLevel.Info);
 
