@@ -32,7 +32,6 @@ namespace LittleNPCs.Framework {
                 }
                 else {
                     // No LittleNPC, try to get Child object.
-                    monitor_.Log($"GetLittleNPC({childIndex}) returns null");
                     var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse);
                     Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
                     if (child is not null) {
@@ -41,10 +40,10 @@ namespace LittleNPCs.Framework {
                         Name = $"{prefix}{child.Name}";
                         DisplayName = child.Name;
                         Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for child with index {childIndex} returns {Name}");
+                        monitor_.Log($"Query for convertible child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for child with index {childIndex} returns null");
+                        monitor_.Log($"Query for convertible child with index {childIndex} returns null");
                     }
                 }
             }
@@ -58,10 +57,10 @@ namespace LittleNPCs.Framework {
                     Name = $"{prefix}{child.Name}";
                     DisplayName = child.Name;
                     Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for child with index {childIndex} returns {Name}");
+                        monitor_.Log($"Query for convertible child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for child with index {childIndex} returns null");
+                        monitor_.Log($"Query for convertible child with index {childIndex} returns null");
                     }
             }
         }
