@@ -22,6 +22,8 @@ namespace LittleNPCs {
         // We have to track child indices since they change when children are removed.
         private static Dictionary<string, int> childIndexMap_ = new Dictionary<string, int>();
 
+        private int? relativeSeconds_;
+
         // We have to keep track of LittleNPCs vor various reasons.
         public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
 
@@ -36,7 +38,7 @@ namespace LittleNPCs {
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
-            helper.Events.GameLoop.TimeChanged += OnTimeChanged;
+            helper.Events.GameLoop.OneSecondUpdateTicking += OnOneSecondUpdateTicking;
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
 
@@ -48,9 +50,9 @@ namespace LittleNPCs {
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
-            // ATTENTION: OnDayStarted is too early for child conversion, not all assets are loaded yet.
-            // We have to use OnTimeChanged() at 06:10 instead. The only thing we can do here is puttting
-            // all children about to convert into bed.
+            // ATTENTION: OnDayStarted() is too early for child conversion, not all assets are loaded yet.
+            // We have to use OnOneSecondUpdateTicking() at 60 ticks after OnDayStarted() instead.
+            // The only thing we can do here is puttting all children about to convert into bed.
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
             convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
@@ -65,12 +67,14 @@ namespace LittleNPCs {
             // Enabling this patch changes the semantics of Child.GetChildIndex() and must be done after filling the map.
             ChildGetChildIndexPatchEnabled = true;
             this.Monitor.Log("GetChildIndex patch enabled.");
+
+            // Set the counter for OnOneSecondUpdateTicking().
+            relativeSeconds_ = 0;
         }
 
-        private void OnTimeChanged(object sender, TimeChangedEventArgs e) {
-            // Run only once per day at 06:10 .
-            // ATTENTION: This method runs at 06:00 but not on the first day after loading the save!
-            if (e.NewTime != 610) {
+        private void OnOneSecondUpdateTicking(object sender, OneSecondUpdateTickingEventArgs e) {
+            // Run only once per day at 60 ticks after OnDayStarted().
+            if (!relativeSeconds_.HasValue || ++relativeSeconds_ != 1) {
                 return;
             }
 
@@ -128,6 +132,8 @@ namespace LittleNPCs {
                         LittleNPCsList.Remove(littleNPC);
 
                         this.Monitor.Log($"Replaced LittleNPC {littleNPC.Name} in {npcs[i].currentLocation.Name} by child {child.Name}.", LogLevel.Info);
+
+                        relativeSeconds_ = null;
                     }
                 }
             }
@@ -168,6 +174,8 @@ namespace LittleNPCs {
 
             ChildGetChildIndexPatchEnabled = false;
             this.Monitor.Log("GetChildIndex patch disabled.");
+
+            relativeSeconds_ = null;
         }
 
         /// <summary>

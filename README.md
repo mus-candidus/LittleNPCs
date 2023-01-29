@@ -39,7 +39,3 @@ Remove `Data/NPCDispositions` from your content pack first. For replacing tokens
 | SecondChildGender   | SecondLittleNPCGender      |                                                               |
 | SecondChildParent   |                            | Use the standard CP token {{spouse}} instead.                 |
 | NumberTotalChildren |                            | Not needed anymore. Number of children is handled internally. |
-
-**Notes**
-
-For technical reasons NPC conversion happens at 6:10. You might be able to see your unconverted children before. This is expected behavior.
