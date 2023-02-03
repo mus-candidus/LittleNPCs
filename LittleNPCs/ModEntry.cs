@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+
+using Microsoft.Xna.Framework;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -104,6 +107,11 @@ namespace LittleNPCs {
                     this.Monitor.Log($"Replaced child {child.Name} by LittleNPC {littleNPC.Name}.", LogLevel.Info);
                 }
             }
+
+            if (config_.DoChildrenVisitVolcanoIsland) {
+                // Add random island schedule.
+                AddRandomIslandSchedule(LittleNPCsList);
+            }
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
@@ -176,6 +184,70 @@ namespace LittleNPCs {
             this.Monitor.Log("GetChildIndex patch disabled.");
 
             relativeSeconds_ = null;
+        }
+
+        /// <summary>
+        /// Add island schedule randomly.
+        /// </summary>
+        /// <param name="littleNPCs"></param>
+        private void AddRandomIslandSchedule(List<LittleNPC> littleNPCs) {
+            // ATTENTION: CustomNPCExclusions patches the very same methods we'd have to patch,
+            // IslandSouth.CanVisitIslandToday() and IslandSouth.SetupIslandSchedules() in a conflicting way.
+            // To avoid that we just copied the important parts from IslandSouth.SetupIslandSchedules().
+            var islandActivityAssignments = new List<IslandSouth.IslandActivityAssigments>();
+            var last_activity_assignments = new Dictionary<Character, string>();
+            var random = new Random((int) ((float) Game1.uniqueIDForThisGame * 1.21f) + (int) ((float) Game1.stats.DaysPlayed * 2.5f));
+
+            var npcs = littleNPCs.Cast<NPC>().ToList();
+            islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1200, npcs, random, last_activity_assignments));
+            islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1400, npcs, random, last_activity_assignments));
+            islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1600, npcs, random, last_activity_assignments));
+            last_activity_assignments = null;
+
+            foreach (NPC npc in npcs) {
+                if (random.NextDouble() < 0.4) {
+                    StringBuilder sb = new StringBuilder();
+                    bool hasIslandAttire = IslandSouth.HasIslandAttire(npc);
+
+                    if (hasIslandAttire) {
+                        Point dressingRoomPoint = IslandSouth.GetDressingRoomPoint(npc);
+                        sb.Append($"/a1150 IslandSouth {dressingRoomPoint.X} {dressingRoomPoint.Y} change_beach");
+                        
+                        foreach (IslandSouth.IslandActivityAssigments activity in islandActivityAssignments) {
+                            string text = activity.GetScheduleStringForCharacter(npc);
+                            if (!string.IsNullOrEmpty(text)) {
+                                sb.Append(text);
+                            }
+                        }
+                       
+                        Point dressingRoomPoint2 = IslandSouth.GetDressingRoomPoint(npc);
+                        sb.Append($"/a1730 IslandSouth {dressingRoomPoint2.X} {dressingRoomPoint2.Y} change_normal");
+                        
+                    }
+                    else {
+                        bool endActivity = false;
+                        foreach (IslandSouth.IslandActivityAssigments activity in islandActivityAssignments) {
+                            string text = activity.GetScheduleStringForCharacter(npc);
+                            if (!string.IsNullOrEmpty(text)) {
+                                if (!endActivity) {
+                                    text = $"/a{text.Substring(1)}";
+                                    endActivity = true;
+                                }
+                                sb.Append(text);
+                            }
+                        }
+                    }
+
+                    sb.Append("/1800 bed");
+
+                    sb.Remove(0, 1);
+                    npc.islandScheduleName.Value = "island";
+                    npc.Schedule = npc.parseMasterSchedule(sb.ToString());
+                    Game1.netWorldState.Value.IslandVisitors[npc.Name] = true;
+
+                    this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", StardewModdingAPI.LogLevel.Info);
+                }
+            }
         }
 
         /// <summary>

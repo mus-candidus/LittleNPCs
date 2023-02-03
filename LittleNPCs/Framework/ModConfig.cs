@@ -8,11 +8,13 @@ namespace LittleNPCs.Framework {
     /// DoChildrenWander: when true, children wander around the house every hour (unless scheduled).
     /// DoChildrenHaveCurfew: when true, children will head home at curfew time (unless already walking somewhere).
     /// CurfewTime: the time of curfew (when DoChildrenHaveCurfew is true). Default is 1900 (7PM).
+    /// DoChildrenVisitVolcanoIsland: when true, children visit Volcane island by chance.
     /// </summary>
     public class ModConfig {
         public int AgeWhenKidsAreModified { get; set; } = 83;
         public bool DoChildrenWander { get; set; } = true;
         public bool DoChildrenHaveCurfew { get; set; } = true;
         public int CurfewTime { get; set; } = 1900;
+        public bool DoChildrenVisitVolcanoIsland { get; set; } = false;
     }
 }
