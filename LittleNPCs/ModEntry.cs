@@ -194,6 +194,15 @@ namespace LittleNPCs {
             // ATTENTION: CustomNPCExclusions patches the very same methods we'd have to patch,
             // IslandSouth.CanVisitIslandToday() and IslandSouth.SetupIslandSchedules() in a conflicting way.
             // To avoid that we just copied the important parts from IslandSouth.SetupIslandSchedules().
+            if (Utility.isFestivalDay(Game1.Date.DayOfMonth, Game1.Date.Season)
+             || (Game1.Date.Season == "winter" && Game1.Date.DayOfMonth >= 15 && Game1.Date.DayOfMonth <= 17)) {
+                return;
+            }
+            IslandSouth islandSouth = Game1.getLocationFromName("IslandSouth") as IslandSouth;
+            if (islandSouth is null || !islandSouth.resortRestored.Value || Game1.IsRainingHere(islandSouth) || !islandSouth.resortOpenToday.Value) {
+                return;
+            }
+            
             var islandActivityAssignments = new List<IslandSouth.IslandActivityAssigments>();
             var last_activity_assignments = new Dictionary<Character, string>();
             var random = new Random((int) ((float) Game1.uniqueIDForThisGame * 1.21f) + (int) ((float) Game1.stats.DaysPlayed * 2.5f));
