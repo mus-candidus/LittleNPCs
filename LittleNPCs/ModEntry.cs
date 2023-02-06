@@ -242,9 +242,10 @@ namespace LittleNPCs {
                     sb.Append("/1800 bed");
 
                     sb.Remove(0, 1);
-                    npc.islandScheduleName.Value = "island";
-                    npc.Schedule = npc.parseMasterSchedule(sb.ToString());
-                    Game1.netWorldState.Value.IslandVisitors[npc.Name] = true;
+                    if (npc.TryLoadSchedule("island", sb.ToString())) {
+                        npc.islandScheduleName.Value = "island";
+                        Game1.netWorldState.Value.IslandVisitors[npc.Name] = true;
+                    }
 
                     this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", StardewModdingAPI.LogLevel.Info);
                 }
