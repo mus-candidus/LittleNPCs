@@ -19,7 +19,7 @@ namespace LittleNPCs.Framework.Patches {
                 return true;
             }
 
-            Warp warp = __instance.location.isCollidingWithWarpOrDoor(position);
+            Warp warp = __instance.location.isCollidingWithWarpOrDoor(position, littleNPC);
             if (warp is null) {
                 return false;
             }
@@ -49,8 +49,11 @@ namespace LittleNPCs.Framework.Patches {
                 if (littleNPC.temporaryController is not null && littleNPC.controller is not null) {
                     littleNPC.controller.location = __instance.location;
                 }
+                Game1.warpCharacter(littleNPC, __instance.location, new Vector2(warp.TargetX, warp.TargetY));
             }
-            Game1.warpCharacter(littleNPC, __instance.location, new Vector2(warp.TargetX, warp.TargetY));
+            else {
+                Game1.warpCharacter(littleNPC, warp.TargetName, new Vector2(warp.TargetX, warp.TargetY));
+            }
 
             if (__instance.isPlayerPresent() && __instance.location.doors.ContainsKey(new Point(warp.X, warp.Y))) {
                 __instance.location.playSound("doorClose", new Vector2(warp.X, warp.Y), null, StardewValley.Audio.SoundContext.NPC);
