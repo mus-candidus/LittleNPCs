@@ -57,11 +57,11 @@ namespace LittleNPCs.Framework {
                     Name = $"{prefix}{child.Name}";
                     DisplayName = child.Name;
                     Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
-                    }
-                    else {
-                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
-                    }
+                    monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
+                }
+                else {
+                    monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
+                }
             }
         }
 
