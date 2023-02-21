@@ -28,7 +28,7 @@ namespace LittleNPCs.Framework {
                     Name = littleNPC.Name;
                     DisplayName = littleNPC.displayName;
                     Gender = littleNPC.Gender == 0 ? "male": "female";
-                    monitor_.Log($"GetLittleNPC({childIndex}) returns {Name}");
+                    monitor_.VerboseLog($"GetLittleNPC({childIndex}) returns {Name}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -40,10 +40,10 @@ namespace LittleNPCs.Framework {
                         Name = $"{prefix}{child.Name}";
                         DisplayName = child.Name;
                         Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for convertible child with index {childIndex} returns {Name}");
+                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for convertible child with index {childIndex} returns null");
+                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
                     }
                 }
             }
@@ -57,10 +57,10 @@ namespace LittleNPCs.Framework {
                     Name = $"{prefix}{child.Name}";
                     DisplayName = child.Name;
                     Gender = child.Gender == 0 ? "male": "female";
-                        monitor_.Log($"Query for convertible child with index {childIndex} returns {Name}");
+                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
                     }
                     else {
-                        monitor_.Log($"Query for convertible child with index {childIndex} returns null");
+                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
                     }
             }
         }
