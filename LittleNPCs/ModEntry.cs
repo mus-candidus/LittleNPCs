@@ -140,8 +140,6 @@ namespace LittleNPCs {
                         LittleNPCsList.Remove(littleNPC);
 
                         this.Monitor.Log($"Replaced LittleNPC {littleNPC.Name} in {npcs[i].currentLocation.Name} by child {child.Name}.", LogLevel.Info);
-
-                        relativeSeconds_ = null;
                     }
                 }
             }
@@ -172,6 +170,8 @@ namespace LittleNPCs {
 
             ChildGetChildIndexPatchEnabled = false;
             this.Monitor.Log("GetChildIndex patch disabled.");
+
+            relativeSeconds_ = null;
         }
 
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
