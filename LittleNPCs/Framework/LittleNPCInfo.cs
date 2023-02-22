@@ -10,7 +10,9 @@ using StardewValley.Locations;
 
 
 namespace LittleNPCs.Framework {
-    internal class LittleNPCInfo {
+    internal record LittleNPCInfo {
+        public enum LoadState { None, LittleNPC, Child, SaveGame }
+
         private IMonitor monitor_;
 
         public string Name { get; private set; }
@@ -18,6 +20,8 @@ namespace LittleNPCs.Framework {
         public string DisplayName { get; private set; }
 
         public string Gender { get; private set; }
+
+        public LoadState LoadedFrom { get; private set; }
 
         public LittleNPCInfo(int childIndex, IMonitor monitor) {
             monitor_ = monitor;
@@ -28,6 +32,7 @@ namespace LittleNPCs.Framework {
                     Name = littleNPC.Name;
                     DisplayName = littleNPC.displayName;
                     Gender = littleNPC.Gender == 0 ? "male": "female";
+                    LoadedFrom = LoadState.LittleNPC;
                     monitor_.VerboseLog($"GetLittleNPC({childIndex}) returns {Name}");
                 }
                 else {
@@ -40,6 +45,7 @@ namespace LittleNPCs.Framework {
                         Name = $"{prefix}{child.Name}";
                         DisplayName = child.Name;
                         Gender = child.Gender == 0 ? "male": "female";
+                        LoadedFrom = LoadState.Child;
                         monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
                     }
                     else {
@@ -57,6 +63,7 @@ namespace LittleNPCs.Framework {
                     Name = $"{prefix}{child.Name}";
                     DisplayName = child.Name;
                     Gender = child.Gender == 0 ? "male": "female";
+                    LoadedFrom = LoadState.SaveGame;
                     monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
                 }
                 else {
