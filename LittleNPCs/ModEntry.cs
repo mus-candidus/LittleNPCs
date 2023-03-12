@@ -63,8 +63,12 @@ namespace LittleNPCs {
             }
             convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
 
+            if (childIndexMap_.Any()) {
+                this.Monitor.Log($"{nameof(childIndexMap_)} is not empty, clearing it.", LogLevel.Error);
+                childIndexMap_.Clear();
+            }
+
             // ATTENTION: Getting child indices must be done before removing any child and doesn't depend on age.
-            Assert(!childIndexMap_.Any(), $"{nameof(childIndexMap_)} is not empty");
             foreach (var c in farmHouse.getChildren()) {
                 childIndexMap_.Add(c.Name, c.GetChildIndex());
                 this.Monitor.Log($"Get child index for {c.Name}: {childIndexMap_[c.Name]}");
@@ -84,7 +88,10 @@ namespace LittleNPCs {
                 return;
             }
 
-            Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
+            if (LittleNPCsList.Any()) {
+                this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
+                LittleNPCsList.Clear();
+            }
 
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
@@ -173,7 +180,10 @@ namespace LittleNPCs {
                 }
             }
 
-            Assert(!LittleNPCsList.Any(), $"{nameof(LittleNPCsList)} is not empty");
+            if (LittleNPCsList.Any()) {
+                this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
+                LittleNPCsList.Clear();
+            }
 
             childIndexMap_.Clear();
 
@@ -289,15 +299,6 @@ namespace LittleNPCs {
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
-        }
-
-        /// <summary>
-        /// Custom assert method because <code>Debug.Assert()</code> takes the whole application down. 
-        /// </summary>
-        private static void Assert(bool condition, string message) {
-            if (!condition) {
-                throw new InvalidOperationException(message);
-            }
         }
     }
 }
