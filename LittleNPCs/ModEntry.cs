@@ -55,9 +55,12 @@ namespace LittleNPCs {
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             // ATTENTION: OnDayStarted() is too early for child conversion, not all assets are loaded yet.
             // We have to use OnOneSecondUpdateTicking() at 60 ticks after OnDayStarted() instead.
-            // The only thing we can do here is puttting all children about to convert into bed.
+            // The only thing we can do here is putting all children about to convert into bed.
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
+            if (convertibleChildren.Count() > 2) {
+                this.Monitor.Log("There are more than two children, only first and second child will be converted.", LogLevel.Info);
+            }
             convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
 
             // ATTENTION: Getting child indices must be done before removing any child and doesn't depend on age.
@@ -92,19 +95,25 @@ namespace LittleNPCs {
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child && convertibleChildren.Contains(child)) {
-                    var littleNPC = LittleNPC.FromChild(child, childIndexMap_[child.Name], farmHouse, this.Monitor);
-                    // Replace Child by LittleNPC object.
-                    npcs[i] = littleNPC;
+                    // Only the first two children.
+                    if (childIndexMap_[child.Name] == 0 || childIndexMap_[child.Name] == 1) {
+                        var littleNPC = LittleNPC.FromChild(child, childIndexMap_[child.Name], farmHouse, this.Monitor);
+                        // Replace Child by LittleNPC object.
+                        npcs[i] = littleNPC;
 
-                    // Copy friendship data.
-                    if (Game1.player.friendshipData.TryGetValue(child.Name, out var friendship)) {
-                        Game1.player.friendshipData[littleNPC.Name] = friendship;
+                        // Copy friendship data.
+                        if (Game1.player.friendshipData.TryGetValue(child.Name, out var friendship)) {
+                            Game1.player.friendshipData[littleNPC.Name] = friendship;
+                        }
+
+                        // Add to tracking list.
+                        LittleNPCsList.Add(littleNPC);
+
+                        this.Monitor.Log($"Replaced child {child.Name} by LittleNPC {littleNPC.Name}.", LogLevel.Info);
                     }
-
-                    // Add to tracking list.
-                    LittleNPCsList.Add(littleNPC);
-
-                    this.Monitor.Log($"Replaced child {child.Name} by LittleNPC {littleNPC.Name}.", LogLevel.Info);
+                    else {
+                        this.Monitor.Log($"Skipping child {child.Name}.", LogLevel.Info);
+                    }
                 }
             }
 
