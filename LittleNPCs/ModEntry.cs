@@ -61,7 +61,6 @@ namespace LittleNPCs {
             if (convertibleChildren.Count() > 2) {
                 this.Monitor.Log("There are more than two children, only first and second child will be converted.", LogLevel.Info);
             }
-            convertibleChildren.ToList().ForEach(c => c.setTilePosition(farmHouse.GetChildBedSpot(c.GetChildIndex())));
 
             if (childIndexMap_.Any()) {
                 this.Monitor.Log($"{nameof(childIndexMap_)} is not empty, clearing it.", LogLevel.Error);
@@ -72,6 +71,13 @@ namespace LittleNPCs {
             foreach (var c in farmHouse.getChildren()) {
                 childIndexMap_.Add(c.Name, c.GetChildIndex());
                 this.Monitor.Log($"Get child index for {c.Name}: {childIndexMap_[c.Name]}");
+            }
+
+            // Put first and second child about to convert into bed.
+            foreach (var child in convertibleChildren) {
+                if (childIndexMap_[child.Name] == 0 || childIndexMap_[child.Name] == 1) {
+                    child.setTilePosition(farmHouse.GetChildBedSpot(child.GetChildIndex()));
+                }
             }
 
             // Enabling this patch changes the semantics of Child.GetChildIndex() and must be done after filling the map.
@@ -102,7 +108,7 @@ namespace LittleNPCs {
             // Plain old for loop because we have to replace list elements.
             for (int i = 0; i < npcs.Count; ++i) {
                 if (npcs[i] is Child child && convertibleChildren.Contains(child)) {
-                    // Only the first two children.
+                    // Convert only the first two children.
                     if (childIndexMap_[child.Name] == 0 || childIndexMap_[child.Name] == 1) {
                         var littleNPC = LittleNPC.FromChild(child, childIndexMap_[child.Name], farmHouse, this.Monitor);
                         // Replace Child by LittleNPC object.
