@@ -5,10 +5,10 @@ using StardewValley;
 
 namespace LittleNPCs.Framework.Patches {
     /// <summary>
-    /// Prefix for <code>Dialogue.checkForSpecialCharacters</code>.
+    /// Prefix for <code>Dialogue.ReplacePlayerEnteredStrings</code>.
     /// Enables use of special variables %kid1 and %kid2 for LittleNPC objects.
     /// </summary>
-    class DialogueCheckForSpecialCharactersPatch {
+    class ReplacePlayerEnteredStringsPatch {
         public static bool Prefix(Dialogue __instance, ref string str) {
             // Here we provide names for LittleNPCs,
             // the original method is still used to provide children's names.

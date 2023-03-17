@@ -36,10 +36,10 @@ namespace LittleNPCs.Framework {
                 original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
                 prefix:   new HarmonyMethod(typeof(Patches.PFCHandleWarpsPatch), nameof(Patches.PFCHandleWarpsPatch.Prefix))
             );
-            // Dialogue.checkForSpecialCharacters patch (prefix).
+            // Dialogue.ReplacePlayerEnteredStrings patch (prefix).
             harmony.Patch(
-                original: AccessTools.Method(typeof(Dialogue), nameof(Dialogue.checkForSpecialCharacters)),
-                prefix:   new HarmonyMethod(typeof(Patches.DialogueCheckForSpecialCharactersPatch), nameof(Patches.DialogueCheckForSpecialCharactersPatch.Prefix))
+                original: AccessTools.Method(typeof(Dialogue), nameof(Dialogue.ReplacePlayerEnteredStrings)),
+                prefix:   new HarmonyMethod(typeof(Patches.ReplacePlayerEnteredStringsPatch), nameof(Patches.ReplacePlayerEnteredStringsPatch.Prefix))
             );
             // Child.GetChildIndex patch (prefix).
             harmony.Patch(
