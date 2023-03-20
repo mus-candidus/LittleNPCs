@@ -187,6 +187,170 @@ namespace LittleNPCs.Framework {
             base.performTenMinuteUpdate(timeOfDay, l);
         }
 
+        public override void arriveAtFarmHouse (FarmHouse farmHouse) {
+            if (ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime) {
+                Point bedPoint = Utility.Vector2ToPoint(DefaultPosition / 64f);
+
+                // If farmer is not here move to bed instantly because path finding will be cancelled when the farmer enters the house.
+                // Note that we need PathFindController even in this case because setTilePosition(bedPoint) places the NPC next to bed.
+                if (Game1.player.currentLocation != farmHouse) {
+                    setTilePosition(bedPoint);
+                }
+                else {
+                    setTilePosition(farmHouse.getEntryLocation());
+                }
+
+                ignoreScheduleToday = true;
+                temporaryController = null;
+                // In order to make path finding work we must assign null first.
+                controller = null;
+
+                controller = new PathFindController(this, farmHouse, bedPoint, 2);
+            }
+            else {
+                setTilePosition(farmHouse.getEntryLocation());
+
+                ignoreScheduleToday = true;
+                temporaryController = null;
+                controller = null;
+
+                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
+            }
+
+            if (controller.pathToEndPoint is null) {
+                willDestroyObjectsUnderfoot = true;
+                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 0);
+            }
+
+            if (Game1.currentLocation == farmHouse) {
+                Game1.currentLocation.playSound("doorClose", null, null, StardewValley.Audio.SoundContext.NPC);
+            }
+        }
+
+        public override void checkSchedule(int timeOfDay) {
+            if (currentScheduleDelay == 0f && scheduleDelaySeconds > 0f) {
+                currentScheduleDelay = scheduleDelaySeconds;
+            }
+            else {
+                if (ModEntry.helper_.Reflection.GetField<bool>(this, "returningToEndPoint").GetValue()) {
+                    return;
+                }
+
+                updatedDialogueYet = false;
+                ModEntry.helper_.Reflection.GetField<Dialogue>(this, "extraDialogueMessageToAddThisMorning").SetValue(null);
+                if (ignoreScheduleToday || Schedule is null) {
+                    return;
+                }
+
+                SchedulePathDescription value = null;
+                if (lastAttemptedSchedule < timeOfDay) {
+                    lastAttemptedSchedule = timeOfDay;
+                    Schedule.TryGetValue(timeOfDay, out value);
+                    if (value is not null) {
+                        queuedSchedulePaths.Add(value);
+                    }
+                    value = null;
+                }
+
+                // If I have curfew, override the normal behavior.
+                if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Game1.getLocationFromName("FarmHouse"))) {
+                    // Send child home for curfew.
+                    if(timeOfDay == ModEntry.config_.CurfewTime) {
+                        value = pathfindToNextScheduleLocation(currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
+                        queuedSchedulePaths.Clear();
+                        queuedSchedulePaths.Add(value);
+                    }
+                    value = null;
+                }
+
+                if (controller is not null && controller.pathToEndPoint is not null && controller.pathToEndPoint.Count > 0) {
+                    return;
+                }
+
+                if (queuedSchedulePaths.Count > 0 && timeOfDay >= queuedSchedulePaths[0].time) {
+                    value = queuedSchedulePaths[0];
+                }
+
+                if (value is null) {
+                    return;
+                }
+
+                prepareToDisembarkOnNewSchedulePath();
+                if (ModEntry.helper_.Reflection.GetField<bool>(this, "returningToEndPoint").GetValue() || temporaryController is not null) {
+                    return;
+                }
+
+                DirectionsToNewLocation = value;
+                if (queuedSchedulePaths.Count > 0) {
+                    queuedSchedulePaths.RemoveAt(0);
+                }
+
+                controller = new PathFindController(DirectionsToNewLocation.route, this, Utility.getGameLocationOfCharacter(this)) {
+                    finalFacingDirection = DirectionsToNewLocation.facingDirection,
+                    endBehaviorFunction = getRouteEndBehaviorFunction(DirectionsToNewLocation.endOfRouteBehavior, DirectionsToNewLocation.endOfRouteMessage)
+                };
+
+                if (controller.pathToEndPoint is null || controller.pathToEndPoint.Count == 0) {
+                    if (controller.endBehaviorFunction is not null) {
+                        controller.endBehaviorFunction(this, currentLocation);
+                    }
+                    controller = null;
+                }
+
+                if (DirectionsToNewLocation is not null && DirectionsToNewLocation.route is not null) {
+                    ModEntry.helper_.Reflection.GetField<Point>(this, "previousEndPoint").SetValue((DirectionsToNewLocation.route.Count > 0) ? DirectionsToNewLocation.route.Last() : Point.Zero);
+                }
+            }
+        }
+
+        public override Dictionary<int, SchedulePathDescription> parseMasterSchedule(string rawData) {
+            // Scheduling code can use "bed" to refer to the usual last stop of an NPC.
+            // For a LittleNPC, this is always the bus stop, so I can just do the replacement here.
+            if (rawData.EndsWith("bed")) {
+                rawData = rawData[..^3] + "BusStop -1 23 3";
+            }
+
+            // Save the previous default map and default position.
+            string previousDefaultMap = DefaultMap;
+            var previousDefaultPosition = DefaultPosition;
+
+            // Pretending my start location is the bus stop location.
+            DefaultMap = "BusStop";
+            DefaultPosition = new Vector2(0, 23) * 64;
+
+            Dictionary<int, SchedulePathDescription> retval = null;
+            try {
+                retval = base.parseMasterSchedule(rawData);
+
+                ParseMasterSchedulePatchExecuted = true;
+            }
+            finally {
+                DefaultMap = previousDefaultMap;
+                DefaultPosition = previousDefaultPosition;
+            }
+
+            return retval;
+        }
+
+        protected override void prepareToDisembarkOnNewSchedulePath() {
+            if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
+                temporaryController = new PathFindController(this, getHome(), new Point(getHome().warps[0].X, getHome().warps[0].Y), 2, true) {
+                    NPCSchedule = true
+                };
+                if (temporaryController.pathToEndPoint is null || temporaryController.pathToEndPoint.Count <= 0) {
+                    temporaryController = null;
+                    ClearSchedule();
+                }
+                else {
+                    followSchedule = true;
+                }
+            }
+            else if (Utility.getGameLocationOfCharacter(this) is Farm) {
+                temporaryController = null;
+                ClearSchedule();
+            }
+        }
+
         public SDate GetBirthday() {
             SDate birthday;
 
