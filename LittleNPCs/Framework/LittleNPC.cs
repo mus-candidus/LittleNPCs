@@ -232,12 +232,12 @@ namespace LittleNPCs.Framework {
                 currentScheduleDelay = scheduleDelaySeconds;
             }
             else {
-                if (ModEntry.helper_.Reflection.GetField<bool>(this, "returningToEndPoint").GetValue()) {
+                if (returningToEndPoint) {
                     return;
                 }
 
                 updatedDialogueYet = false;
-                ModEntry.helper_.Reflection.GetField<Dialogue>(this, "extraDialogueMessageToAddThisMorning").SetValue(null);
+                extraDialogueMessageToAddThisMorning = null;
                 if (ignoreScheduleToday || Schedule is null) {
                     return;
                 }
@@ -276,7 +276,7 @@ namespace LittleNPCs.Framework {
                 }
 
                 prepareToDisembarkOnNewSchedulePath();
-                if (ModEntry.helper_.Reflection.GetField<bool>(this, "returningToEndPoint").GetValue() || temporaryController is not null) {
+                if (returningToEndPoint || temporaryController is not null) {
                     return;
                 }
 
@@ -298,7 +298,7 @@ namespace LittleNPCs.Framework {
                 }
 
                 if (DirectionsToNewLocation is not null && DirectionsToNewLocation.route is not null) {
-                    ModEntry.helper_.Reflection.GetField<Point>(this, "previousEndPoint").SetValue((DirectionsToNewLocation.route.Count > 0) ? DirectionsToNewLocation.route.Last() : Point.Zero);
+                    previousEndPoint = (DirectionsToNewLocation.route.Count > 0) ? DirectionsToNewLocation.route.Last() : Point.Zero;
                 }
             }
         }
