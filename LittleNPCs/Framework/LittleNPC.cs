@@ -105,7 +105,7 @@ namespace LittleNPCs.Framework {
             characterData.Gender = npc.Gender == 0 ? NpcGender.Male : NpcGender.Female;
             characterData.CanBeRomanced = false;
             characterData.HomeRegion = "Town";
-            characterData.BirthSeason = npc.Birthday_Season;
+            characterData.BirthSeason = Enum.Parse<Season>(npc.Birthday_Season, true);
             characterData.BirthDay = npc.Birthday_Day;
             characterData.HomeLocation = npc.DefaultMap;
             characterData.HomeTile = Utility.Vector2ToPoint(bedSpot / 64f);
