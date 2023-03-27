@@ -45,7 +45,7 @@ namespace LittleNPCs.Framework {
             // Set birthday.
             var birthday = GetBirthday();
             Birthday_Day = birthday.Day;
-            Birthday_Season = birthday.Season;
+            Birthday_Season = Utility.getSeasonKey(birthday.Season);
 
             // Set gender.
             Gender = child.Gender;
