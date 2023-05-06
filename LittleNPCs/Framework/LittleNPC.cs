@@ -184,11 +184,15 @@ namespace LittleNPCs.Framework {
         }
 
         public SDate GetBirthday() {
+            return GetBirthday(WrappedChild);
+        }
+
+        public static SDate GetBirthday(Child child) {
             SDate birthday;
 
             try {
                 // Subtract age of child in days from current date.
-                birthday = SDate.Now().AddDays(-WrappedChild.daysOld.Value);
+                birthday = SDate.Now().AddDays(-child.daysOld.Value);
             }
             catch (ArithmeticException) {
                 // Fallback.

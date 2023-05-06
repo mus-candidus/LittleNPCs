@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 using StardewModdingAPI;
+using StardewModdingAPI.Utilities;
 
 
 namespace LittleNPCs.Framework {
@@ -89,7 +90,31 @@ namespace LittleNPCs.Framework {
                         () => cachedLittleNPCs_[0].Gender.ToTokenReturnValue()
                     )
                 );
+                
+                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCBirthSeason",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateFirstLittleNPC(modEntry.Monitor),
+                        () => cachedLittleNPCs_[0].Birthday.Season.ToTokenReturnValue()
+                    )
+                );
 
+                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCBirthDay",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateFirstLittleNPC(modEntry.Monitor),
+                        () => cachedLittleNPCs_[0].Birthday.Day.ToString().ToTokenReturnValue()
+                    )
+                );
+
+                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCAge",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateFirstLittleNPC(modEntry.Monitor),
+                        () => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString().ToTokenReturnValue()
+                    )
+                );
+                
                 api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCName",
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
@@ -111,6 +136,30 @@ namespace LittleNPCs.Framework {
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
                         () => cachedLittleNPCs_[1].Gender.ToTokenReturnValue()
+                    )
+                );
+                
+                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCBirthSeason",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateSecondLittleNPC(modEntry.Monitor),
+                        () => cachedLittleNPCs_[1].Birthday.Season.ToTokenReturnValue()
+                    )
+                );
+
+                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCBirthDay",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateSecondLittleNPC(modEntry.Monitor),
+                        () => cachedLittleNPCs_[1].Birthday.Day.ToString().ToTokenReturnValue()
+                    )
+                );
+
+                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCAge",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateSecondLittleNPC(modEntry.Monitor),
+                        () => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString().ToTokenReturnValue()
                     )
                 );
             }
