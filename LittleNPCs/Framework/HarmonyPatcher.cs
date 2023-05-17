@@ -2,6 +2,7 @@ using HarmonyLib;
 
 using StardewValley;
 using StardewValley.Characters;
+using StardewValley.Pathfinding;
 
 
 namespace LittleNPCs.Framework {

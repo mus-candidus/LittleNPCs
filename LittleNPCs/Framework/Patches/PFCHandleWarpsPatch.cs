@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 
 using StardewValley;
 using StardewValley.Locations;
+using StardewValley.Pathfinding;
 using StardewValley.Network;
 
 

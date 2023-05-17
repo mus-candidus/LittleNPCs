@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.Pathfinding;
 using StardewValley.GameData.Characters;
 
 
@@ -107,8 +108,11 @@ namespace LittleNPCs.Framework {
             characterData.HomeRegion = "Town";
             characterData.BirthSeason = Enum.Parse<Season>(npc.Birthday_Season, true);
             characterData.BirthDay = npc.Birthday_Day;
-            characterData.HomeLocation = npc.DefaultMap;
-            characterData.HomeTile = Utility.Vector2ToPoint(bedSpot / 64f);
+            var homeData = new CharacterHomeData();
+            homeData.Id = "Default";
+            homeData.Location = npc.DefaultMap;
+            homeData.Tile = Utility.Vector2ToPoint(bedSpot / 64f);
+            characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
             characterData.DisplayName = npc.displayName;
 
             npcDispositions[npc.Name] = characterData;
@@ -256,7 +260,7 @@ namespace LittleNPCs.Framework {
                 if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Game1.getLocationFromName("FarmHouse"))) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
-                        value = pathfindToNextScheduleLocation(currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
+                        value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
                         queuedSchedulePaths.Clear();
                         queuedSchedulePaths.Add(value);
                     }
@@ -303,7 +307,7 @@ namespace LittleNPCs.Framework {
             }
         }
 
-        public override Dictionary<int, SchedulePathDescription> parseMasterSchedule(string rawData) {
+        public override Dictionary<int, SchedulePathDescription> parseMasterSchedule(string scheduleKey, string rawData) {
             // Scheduling code can use "bed" to refer to the usual last stop of an NPC.
             // For a LittleNPC, this is always the bus stop, so I can just do the replacement here.
             if (rawData.EndsWith("bed")) {
@@ -320,7 +324,7 @@ namespace LittleNPCs.Framework {
 
             Dictionary<int, SchedulePathDescription> retval = null;
             try {
-                retval = base.parseMasterSchedule(rawData);
+                retval = base.parseMasterSchedule(scheduleKey, rawData);
 
                 ParseMasterSchedulePatchExecuted = true;
             }
