@@ -95,7 +95,7 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].Birthday.Season.ToTokenReturnValue()
+                        () => cachedLittleNPCs_[0].Birthday.Season.ToString().ToTokenReturnValue()
                     )
                 );
 
@@ -143,7 +143,7 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].Birthday.Season.ToTokenReturnValue()
+                        () => cachedLittleNPCs_[1].Birthday.Season.ToString().ToTokenReturnValue()
                     )
                 );
 
