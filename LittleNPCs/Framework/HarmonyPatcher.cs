@@ -18,11 +18,6 @@ namespace LittleNPCs.Framework {
                 original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
                 prefix:   new HarmonyMethod(typeof(Patches.PFCHandleWarpsPatch), nameof(Patches.PFCHandleWarpsPatch.Prefix))
             );
-            // Child.checkAction patch (prefix).
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Child), nameof(Child.checkAction)),
-                prefix:   new HarmonyMethod(typeof(Patches.ChildCheckActionPatch), nameof(Patches.ChildCheckActionPatch.Prefix))
-            );
         }
     }
 }
