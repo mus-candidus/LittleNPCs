@@ -37,11 +37,11 @@ namespace LittleNPCs.Framework {
         /// <value></value>
         public int ChildIndex { get; private set; }
 
-        protected LittleNPC(IMonitor monitor, Child child, int childIndex, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, string displayName, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
+        protected LittleNPC(IMonitor monitor, Child child, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, string displayName, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
         : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
             monitor_ = monitor;
             WrappedChild = child;
-            ChildIndex = childIndex;
+            ChildIndex = child.GetChildIndex();
 
             // Set birthday.
             var birthday = GetBirthday();
@@ -55,15 +55,15 @@ namespace LittleNPCs.Framework {
             this.displayName = displayName;
         }
 
-        public static LittleNPC FromChild(Child child, int childIndex, FarmHouse farmHouse, IMonitor monitor) {
-            Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(childIndex)) * 64f;
+        public static LittleNPC FromChild(Child child, FarmHouse farmHouse, IMonitor monitor) {
+            Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(child.GetChildIndex())) * 64f;
             // (0, 0) means there's noe bed available and the child will stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
                 bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1)) * 64f;
                 monitor.Log($"No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
-            string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+            string prefix = child.GetChildIndex() == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
 
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
@@ -71,7 +71,6 @@ namespace LittleNPCs.Framework {
             var portrait = Game1.content.Load<Texture2D>($"Portraits/{prefix}{child.Name}");
             var npc = new LittleNPC(monitor,
                                     child,
-                                    childIndex,
                                     sprite,
                                     bedSpot,
                                     child.DefaultMap,
@@ -356,11 +355,15 @@ namespace LittleNPCs.Framework {
         }
 
         public SDate GetBirthday() {
+            return GetBirthday(WrappedChild);
+        }
+
+        public static SDate GetBirthday(Child child) {
             SDate birthday;
 
             try {
                 // Subtract age of child in days from current date.
-                birthday = SDate.Now().AddDays(-WrappedChild.daysOld.Value);
+                birthday = SDate.Now().AddDays(-child.daysOld.Value);
             }
             catch (ArithmeticException) {
                 // Fallback.
