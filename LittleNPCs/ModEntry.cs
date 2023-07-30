@@ -62,6 +62,7 @@ namespace LittleNPCs {
                     child.setTilePosition(farmHouse.GetChildBedSpot(child.GetChildIndex()));
                     // Set the original child invisible during the day.
                     child.IsInvisible = true;
+                    child.HideShadow = true;
                 }
             }
 
