@@ -193,7 +193,7 @@ namespace LittleNPCs {
             // ATTENTION: CustomNPCExclusions patches the very same methods we'd have to patch,
             // IslandSouth.CanVisitIslandToday() and IslandSouth.SetupIslandSchedules() in a conflicting way.
             // To avoid that we just copied the important parts from IslandSouth.SetupIslandSchedules().
-            if (Utility.isFestivalDay(Game1.Date.DayOfMonth, Utility.getSeasonKey(Game1.Date.Season))
+            if (Utility.isFestivalDay(Game1.Date.DayOfMonth, Game1.Date.Season)
              || (Game1.Date.Season == Season.Winter && Game1.Date.DayOfMonth >= 15 && Game1.Date.DayOfMonth <= 17)) {
                 return;
             }

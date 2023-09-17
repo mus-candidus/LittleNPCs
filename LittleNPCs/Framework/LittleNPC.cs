@@ -38,7 +38,7 @@ namespace LittleNPCs.Framework {
         public int ChildIndex { get; private set; }
 
         protected LittleNPC(IMonitor monitor, Child child, AnimatedSprite sprite, Vector2 position, string defaultMap, int facingDir, string name, string displayName, Dictionary<int, int[]> schedule, Texture2D portrait, bool eventActor)
-        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
+        : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor) {
             monitor_ = monitor;
             WrappedChild = child;
             ChildIndex = child.GetChildIndex();
