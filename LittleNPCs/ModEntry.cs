@@ -251,7 +251,7 @@ namespace LittleNPCs {
                     sb.Remove(0, 1);
                     if (npc.TryLoadSchedule("island", sb.ToString())) {
                         npc.islandScheduleName.Value = "island";
-                        Game1.netWorldState.Value.IslandVisitors[npc.Name] = true;
+                        Game1.netWorldState.Value.IslandVisitors.Add(npc.Name);
                     }
 
                     this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", StardewModdingAPI.LogLevel.Info);
