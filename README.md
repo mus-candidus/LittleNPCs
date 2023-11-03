@@ -22,7 +22,7 @@ Every token supports these arguments:
 
 The 1.0 tokens are still there but shouldn't be used for new development.
 
-Only one argument can be given at a time. Token arguments are passed after a colon. For example, if you want the name of FirstLittleNPC, use
+Only one argument can be given at a time. Token arguments are passed after a colon. For example, if you want the internal name of FirstLittleNPC, use
 `{{Candidus42.LittleNPCs/FirstLittleNPC: Name}}`
 
 In your content pack, use these tokens instead of hard-coded names and genders.

@@ -30,6 +30,25 @@ namespace LittleNPCs {
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
 
+            // Check for LittleNPC content packs. This is quite heavy but the only way I know so far:
+            // We have to check for ContentPatcher packs that depend on LittleNPCs.
+            var contentPatcherPacks = from entry in helper.ModRegistry.GetAll()
+                                      where entry.IsContentPack && entry.Manifest.ContentPackFor.UniqueID == "Pathoschild.ContentPatcher"
+                                      select entry.Manifest;
+
+            var littleNPCPacks = from pack in contentPatcherPacks
+                                 from dependency in pack.Dependencies
+                                 where dependency.UniqueID == "Candidus42.LittleNPCs"
+                                 select pack.UniqueID;
+
+            if (!littleNPCPacks.Any()) {
+                throw new InvalidOperationException("Could not find a content pack for LittleNPCs");
+            }
+
+            foreach (var pack in littleNPCPacks) {
+                this.Monitor.Log($"Found content pack for LittleNPCs: {pack}", LogLevel.Info);
+            }
+
             // Read config.
             config_ = helper.ReadConfig<ModConfig>();
 
