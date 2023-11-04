@@ -9,8 +9,8 @@ using StardewModdingAPI.Utilities;
 namespace LittleNPCs.Framework {
     internal static class ContentPatcherTokens {
         /// <summary>
-        /// Core implementation of a CP token that doesn*t accept input and returns a single unbounded value.
-        /// Implmentation details are provided by function objects.
+        /// Core implementation of a CP token that returns a single unbounded value.
+        /// Implementation details are provided by function objects.
         /// </summary>
         private class TokenCore {
             /// <summary>Function called by <code>IsReady()</code>.</summary>
@@ -20,20 +20,26 @@ namespace LittleNPCs.Framework {
             private Func<bool> updateContext_;
 
             /// <summary>Function called by <code>GetValues()</code>.</summary>
-            private Func<IEnumerable<string>> getValues_;
+            private Func<string, IEnumerable<string>> getValues_;
 
-            public TokenCore(Func<bool> isReady, Func<bool> updateContext, Func<IEnumerable<string>> getValues) {
+            /// <summary>Flag that determines whether input is required.</summary>
+            private bool requiresInput_;
+
+            public TokenCore(Func<bool> isReady, Func<bool> updateContext, Func<string, IEnumerable<string>> getValues, bool requiresInput) {
                 isReady_       = isReady;
                 updateContext_ = updateContext;
                 getValues_     = getValues;
+                requiresInput_ = requiresInput;
             }
 
             /// <summary>Get whether the values may change depending on the context.</summary>
             public bool IsMutable() => true;
 
             /// <summary>Get whether the token allows an input argument (e.g. an NPC name for a relationship token).</summary>
-            public bool AllowsInput() => false;
+            public bool AllowsInput() => requiresInput_;
 
+            /// <summary>Whether the token requires an input argument to work, and does not provide values without it (see <see cref="AllowsInput"/>).</summary>
+            public bool RequiresInput() => requiresInput_;
  
             /// <summary>Whether the token may return multiple values for the given input.</summary>
             /// <param name="input">The input argument, if applicable.</param>
@@ -55,10 +61,10 @@ namespace LittleNPCs.Framework {
 
             /// <summary>Get whether the token is available for use.</summary>
             public bool IsReady() => isReady_();
- 
+
             /// <summary>Get the current values.</summary>
             /// <param name="input">The input argument, if applicable.</param>
-            public IEnumerable<string> GetValues(string input) => getValues_();
+            public IEnumerable<string> GetValues(string input) => getValues_(input);
         }
 
         private class TokenImplementation {
@@ -71,7 +77,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].Name.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[0].Name.ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -79,7 +86,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].DisplayName.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[0].DisplayName.ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -87,7 +95,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].Gender.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[0].Gender.ToTokenReturnValue(),
+                        false
                     )
                 );
                 
@@ -95,7 +104,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].Birthday.Season.ToString().ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[0].Birthday.Season.ToString().ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -103,7 +113,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[0].Birthday.Day.ToString().ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[0].Birthday.Day.ToString().ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -111,7 +122,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        () => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString().ToTokenReturnValue()
+                        (unused) => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString().ToTokenReturnValue(),
+                        false
                     )
                 );
                 
@@ -119,7 +131,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].Name.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[1].Name.ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -127,7 +140,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].DisplayName.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[1].DisplayName.ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -135,7 +149,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].Gender.ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[1].Gender.ToTokenReturnValue(),
+                        false
                     )
                 );
                 
@@ -143,7 +158,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].Birthday.Season.ToString().ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[1].Birthday.Season.ToString().ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -151,7 +167,8 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => cachedLittleNPCs_[1].Birthday.Day.ToString().ToTokenReturnValue()
+                        (unused) => cachedLittleNPCs_[1].Birthday.Day.ToString().ToTokenReturnValue(),
+                        false
                     )
                 );
 
@@ -159,7 +176,46 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        () => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString().ToTokenReturnValue()
+                        (unused) => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString().ToTokenReturnValue(),
+                        false
+                    )
+                );
+
+                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPC",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateFirstLittleNPC(modEntry.Monitor),
+                        (input) => {
+                            return (input switch {
+                                "Name"        => cachedLittleNPCs_[0].Name,
+                                "DisplayName" => cachedLittleNPCs_[0].DisplayName,
+                                "Gender"      => cachedLittleNPCs_[0].Gender,
+                                "BirthSeason" => cachedLittleNPCs_[0].Birthday.Season,
+                                "BirthDay"    => cachedLittleNPCs_[0].Birthday.Day.ToString(),
+                                "Age"         => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString(),
+                                _             => string.Empty
+                            }).ToTokenReturnValue();
+                        },
+                        true
+                    )
+                );
+
+                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPC",
+                    new TokenCore(
+                        () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
+                        () => UpdateSecondLittleNPC(modEntry.Monitor),
+                        (input) => {
+                            return (input switch {
+                                "Name"        => cachedLittleNPCs_[1].Name,
+                                "DisplayName" => cachedLittleNPCs_[1].DisplayName,
+                                "Gender"      => cachedLittleNPCs_[1].Gender,
+                                "BirthSeason" => cachedLittleNPCs_[1].Birthday.Season,
+                                "BirthDay"    => cachedLittleNPCs_[1].Birthday.Day.ToString(),
+                                "Age"         => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString(),
+                                _             => string.Empty
+                            }).ToTokenReturnValue();
+                        },
+                        true
                     )
                 );
             }
