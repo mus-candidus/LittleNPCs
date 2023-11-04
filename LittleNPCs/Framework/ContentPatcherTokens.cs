@@ -190,7 +190,7 @@ namespace LittleNPCs.Framework {
                                 "Name"        => cachedLittleNPCs_[0].Name,
                                 "DisplayName" => cachedLittleNPCs_[0].DisplayName,
                                 "Gender"      => cachedLittleNPCs_[0].Gender,
-                                "BirthSeason" => cachedLittleNPCs_[0].Birthday.Season,
+                                "BirthSeason" => cachedLittleNPCs_[0].Birthday.Season.ToString(),
                                 "BirthDay"    => cachedLittleNPCs_[0].Birthday.Day.ToString(),
                                 "Age"         => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString(),
                                 _             => string.Empty
@@ -209,7 +209,7 @@ namespace LittleNPCs.Framework {
                                 "Name"        => cachedLittleNPCs_[1].Name,
                                 "DisplayName" => cachedLittleNPCs_[1].DisplayName,
                                 "Gender"      => cachedLittleNPCs_[1].Gender,
-                                "BirthSeason" => cachedLittleNPCs_[1].Birthday.Season,
+                                "BirthSeason" => cachedLittleNPCs_[1].Birthday.Season.ToString(),
                                 "BirthDay"    => cachedLittleNPCs_[1].Birthday.Day.ToString(),
                                 "Age"         => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString(),
                                 _             => string.Empty
