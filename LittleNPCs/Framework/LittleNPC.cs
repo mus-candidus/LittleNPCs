@@ -116,7 +116,18 @@ namespace LittleNPCs.Framework {
 
             npcDispositions[npc.Name] = characterData;
 
-            monitor.Log($"Created dispositions for {npc.Name}: {npcDispositions[npc.Name]}", LogLevel.Info);
+            // Subset of character data for logging purposes. Although there's no dispositions string in SDV 1.6 anymore
+            // we create something similar because a serialied CharacterData object seems too heavy for just logging.
+            string loggedCharacterData
+                = string.Join("/",
+                              characterData.Age,
+                              characterData.Gender,
+                              characterData.HomeRegion,
+                              $"{characterData.BirthSeason} {characterData.BirthDay}",
+                              $"{homeData.Location} {homeData.Tile}",
+                              characterData.DisplayName);
+
+            monitor.Log($"Created character data for {npc.Name}: {loggedCharacterData}", LogLevel.Info);
 
             // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
             // This is not a problem since we generated dispositions with matching default values beforehand.
