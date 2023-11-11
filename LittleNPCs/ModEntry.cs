@@ -77,7 +77,7 @@ namespace LittleNPCs {
 
             // Put first and second child about to convert into bed.
             foreach (var child in convertibleChildren) {
-                if (child.GetChildIndex() == 0 || child.GetChildIndex() == 1) {
+                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
                     child.setTilePosition(farmHouse.GetChildBedSpot(child.GetChildIndex()));
                     // Set the original child invisible during the day.
                     child.IsInvisible = true;
@@ -109,7 +109,7 @@ namespace LittleNPCs {
             var childrenToConvert = new List<Child>();
             foreach (var child in convertibleChildren) {
                 // Convert only the first two children.
-                if (child.GetChildIndex() == 0 || child.GetChildIndex() == 1) {
+                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
                     childrenToConvert.Add(child);
                 }
                 else {
@@ -285,6 +285,16 @@ namespace LittleNPCs {
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
+        }
+
+        /// <summary>
+        /// Checks if child index is a valid LittleNPC index.
+        /// </summary>
+        /// <param name="childIndex"></param>
+        /// <returns></returns>
+        internal static bool IsValidLittleNPCIndex(int childIndex) {
+            // Only the first two children can be converted.
+            return (childIndex == 0 || childIndex == 1);
         }
     }
 }

@@ -9,7 +9,7 @@ namespace LittleNPCs.Framework.Patches {
     /// </summary>
     public class ChildCheckActionPatch {
         public static bool Prefix(Child __instance, Farmer who, GameLocation l, ref bool __result) {
-            if (__instance.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified) {
+            if (ModEntry.IsValidLittleNPCIndex(__instance.GetChildIndex()) && __instance.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified) {
                 __result = false;
 
                 // Disable original method.
