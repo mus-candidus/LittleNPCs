@@ -51,6 +51,12 @@ namespace LittleNPCs.Framework {
 
             // Set displayName.
             this.displayName = displayName;
+
+            // Ensure that the original child stays invisible.
+            if (!WrappedChild.IsInvisible) {
+                monitor_.Log($"Made child {WrappedChild.Name} invisible.", LogLevel.Info);
+                WrappedChild.IsInvisible = true;
+            }
         }
 
         public static LittleNPC FromChild(Child child, FarmHouse farmHouse, IMonitor monitor) {
