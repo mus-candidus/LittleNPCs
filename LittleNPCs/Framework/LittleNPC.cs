@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.Objects;
 
 
 namespace LittleNPCs.Framework {
@@ -27,6 +28,12 @@ namespace LittleNPCs.Framework {
         /// </summary>
         /// <value></value>
         public Child WrappedChild { get; private set; }
+        
+        /// <summary>
+        /// Wrapped child's hat, if any. Must be removed during the day.
+        /// </summary>
+        /// <value></value>
+        public Hat WrappedChildHat { get; private set; }
 
         /// <summary>
         /// Cached child index. The method <code>Child.GetChildIndex()</code>
@@ -39,6 +46,12 @@ namespace LittleNPCs.Framework {
         : base(sprite, position, defaultMap, facingDir, name, schedule, portrait, eventActor, null) {
             monitor_ = monitor;
             WrappedChild = child;
+            // Take hat off because it stays visible even when making a child invisible.
+            if (WrappedChild.hat.Value is not null) {
+                WrappedChildHat = WrappedChild.hat.Value;
+                WrappedChild.hat.Value = null;
+            }
+
             ChildIndex = child.GetChildIndex();
 
             // Set birthday.

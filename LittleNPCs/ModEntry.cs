@@ -148,6 +148,11 @@ namespace LittleNPCs {
                 var littleNPCsToConvert = npcs.OfType<LittleNPC>().ToList();
                 foreach (var littleNPC in littleNPCsToConvert) {
                     var child = littleNPC.WrappedChild;
+                    // Put hat on (part of the save game).
+                    if (littleNPC.WrappedChildHat is not null) {
+                        child.hat.Value = littleNPC.WrappedChildHat;
+                    }
+
                     // Replace LittleNPC by Child object.
                     npcs.Remove(littleNPC);
 
