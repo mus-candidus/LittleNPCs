@@ -63,6 +63,45 @@ namespace LittleNPCs {
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
             ContentPatcherTokens.Register(this);
+            
+            // GenericModConfigMenu support.
+            var configMenu = this.Helper.ModRegistry.GetApi<GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null) {
+                return;
+            }
+            
+            configMenu.Register(this.ModManifest,
+                                () => config_ = new ModConfig(),
+                                () => this.Helper.WriteConfig(config_));
+            
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.AgeWhenKidsAreModified,
+                                       (val) => config_.AgeWhenKidsAreModified = val,
+                                       () => "Age when kids are modified",
+                                       min: 1);
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenWander,
+                                     (val) => config_.DoChildrenWander = val,
+                                     () => "Do children wander");
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenHaveCurfew,
+                                     (val) => config_.DoChildrenHaveCurfew = val,
+                                     () => "Do children have curfew");
+            
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.CurfewTime,
+                                       (val) => config_.CurfewTime = val,
+                                       () => "Curfew time",
+                                       min: 1200,
+                                       max: 2400,
+                                       interval: 100);
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenVisitVolcanoIsland,
+                                     (val) => config_.DoChildrenVisitVolcanoIsland = val,
+                                     () => "Do children visit Volcano Island");
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
