@@ -11,6 +11,7 @@ using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
 using StardewValley.Locations;
+using StardewValley.Objects;
 using StardewValley.Pathfinding;
 using StardewValley.GameData.Characters;
 
@@ -29,6 +30,12 @@ namespace LittleNPCs.Framework {
         /// </summary>
         /// <value></value>
         public Child WrappedChild { get; private set; }
+        
+        /// <summary>
+        /// Wrapped child's hat, if any. Must be removed during the day.
+        /// </summary>
+        /// <value></value>
+        public Hat WrappedChildHat { get; private set; }
 
         /// <summary>
         /// Cached child index. The method <code>Child.GetChildIndex()</code>
@@ -41,6 +48,12 @@ namespace LittleNPCs.Framework {
         : base(sprite, position, defaultMap, facingDir, name, portrait, eventActor) {
             monitor_ = monitor;
             WrappedChild = child;
+            // Take hat off because it stays visible even when making a child invisible.
+            if (WrappedChild.hat.Value is not null) {
+                WrappedChildHat = WrappedChild.hat.Value;
+                WrappedChild.hat.Value = null;
+            }
+
             ChildIndex = child.GetChildIndex();
 
             // Set birthday.
@@ -53,6 +66,12 @@ namespace LittleNPCs.Framework {
 
             // Set displayName.
             this.displayName = displayName;
+
+            // Ensure that the original child stays invisible.
+            if (!WrappedChild.IsInvisible) {
+                monitor_.Log($"Made child {WrappedChild.Name} invisible.", LogLevel.Info);
+                WrappedChild.IsInvisible = true;
+            }
         }
 
         public static LittleNPC FromChild(Child child, FarmHouse farmHouse, IMonitor monitor) {
@@ -63,19 +82,17 @@ namespace LittleNPCs.Framework {
                 monitor.Log($"No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
-            string prefix = child.GetChildIndex() == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
-
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
-            var sprite = new AnimatedSprite($"Characters/{prefix}{child.Name}", 0, 16, 32);
-            var portrait = Game1.content.Load<Texture2D>($"Portraits/{prefix}{child.Name}");
+            var sprite = new AnimatedSprite($"Characters/{LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name)}", 0, 16, 32);
+            var portrait = Game1.content.Load<Texture2D>($"Portraits/{LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name)}");
             var npc = new LittleNPC(monitor,
                                     child,
                                     sprite,
                                     bedSpot,
                                     child.DefaultMap,
                                     child.FacingDirection,
-                                    $"{prefix}{child.Name}",
+                                    LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name),
                                     child.Name,
                                     portrait,
                                     false);

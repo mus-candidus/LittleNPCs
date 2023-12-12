@@ -64,6 +64,45 @@ namespace LittleNPCs {
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
             ContentPatcherTokens.Register(this);
+            
+            // GenericModConfigMenu support.
+            var configMenu = this.Helper.ModRegistry.GetApi<GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            if (configMenu is null) {
+                return;
+            }
+            
+            configMenu.Register(this.ModManifest,
+                                () => config_ = new ModConfig(),
+                                () => this.Helper.WriteConfig(config_));
+            
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.AgeWhenKidsAreModified,
+                                       (val) => config_.AgeWhenKidsAreModified = val,
+                                       () => "Age when kids are modified",
+                                       min: 1);
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenWander,
+                                     (val) => config_.DoChildrenWander = val,
+                                     () => "Do children wander");
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenHaveCurfew,
+                                     (val) => config_.DoChildrenHaveCurfew = val,
+                                     () => "Do children have curfew");
+            
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.CurfewTime,
+                                       (val) => config_.CurfewTime = val,
+                                       () => "Curfew time",
+                                       min: 1200,
+                                       max: 2400,
+                                       interval: 100);
+            
+            configMenu.AddBoolOption(this.ModManifest,
+                                     () => config_.DoChildrenVisitVolcanoIsland,
+                                     (val) => config_.DoChildrenVisitVolcanoIsland = val,
+                                     () => "Do children visit Volcano Island");
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
@@ -78,7 +117,7 @@ namespace LittleNPCs {
 
             // Put first and second child about to convert into bed.
             foreach (var child in convertibleChildren) {
-                if (child.GetChildIndex() == 0 || child.GetChildIndex() == 1) {
+                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
                     child.setTilePosition(farmHouse.GetChildBedSpot(child.GetChildIndex()));
                     // Set the original child invisible during the day.
                     child.IsInvisible = true;
@@ -110,7 +149,7 @@ namespace LittleNPCs {
             var childrenToConvert = new List<Child>();
             foreach (var child in convertibleChildren) {
                 // Convert only the first two children.
-                if (child.GetChildIndex() == 0 || child.GetChildIndex() == 1) {
+                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
                     childrenToConvert.Add(child);
                 }
                 else {
@@ -149,6 +188,11 @@ namespace LittleNPCs {
                 var littleNPCsToConvert = npcs.OfType<LittleNPC>().ToList();
                 foreach (var littleNPC in littleNPCsToConvert) {
                     var child = littleNPC.WrappedChild;
+                    // Put hat on (part of the save game).
+                    if (littleNPC.WrappedChildHat is not null) {
+                        child.hat.Value = littleNPC.WrappedChildHat;
+                    }
+
                     // Replace LittleNPC by Child object.
                     npcs.Remove(littleNPC);
 
@@ -287,6 +331,16 @@ namespace LittleNPCs {
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
+        }
+
+        /// <summary>
+        /// Checks if child index is a valid LittleNPC index.
+        /// </summary>
+        /// <param name="childIndex"></param>
+        /// <returns></returns>
+        internal static bool IsValidLittleNPCIndex(int childIndex) {
+            // Only the first two children can be converted.
+            return (childIndex == 0 || childIndex == 1);
         }
     }
 }
