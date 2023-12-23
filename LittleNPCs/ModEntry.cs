@@ -43,7 +43,7 @@ namespace LittleNPCs {
                                  select pack.UniqueID;
 
             if (!littleNPCPacks.Any()) {
-                throw new InvalidOperationException("Could not find a content pack for LittleNPCs");
+                this.Monitor.Log("Could not find a content pack for LittleNPCs. Your LittleNPCs will look like mere toddlers and don't do much.", LogLevel.Error);
             }
 
             foreach (var pack in littleNPCPacks) {
