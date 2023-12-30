@@ -243,10 +243,8 @@ namespace LittleNPCs {
         }
 
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
-            // Clear state before returning to title.
-            LittleNPCsList.Clear();
-
-            relativeSeconds_ = null;
+            // Forward the call.
+            OnSaving(sender, null);
         }
 
         /// <summary>
