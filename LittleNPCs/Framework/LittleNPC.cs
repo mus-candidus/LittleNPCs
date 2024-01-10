@@ -157,7 +157,7 @@ namespace LittleNPCs.Framework {
             characterData.Manner = NpcManner.Neutral;
             characterData.SocialAnxiety = NpcSocialAnxiety.Outgoing;
             characterData.Optimism = NpcOptimism.Neutral;
-            characterData.Gender = npc.Gender == 0 ? NpcGender.Male : NpcGender.Female;
+            characterData.Gender = npc.Gender;
             characterData.CanBeRomanced = false;
             characterData.HomeRegion = "Town";
             characterData.BirthSeason = Enum.Parse<Season>(npc.Birthday_Season, true);
@@ -217,7 +217,7 @@ namespace LittleNPCs.Framework {
         /// <returns></returns>
         private static (AnimatedSprite sprite, Texture2D portrait) ProvideFallbackAssets(Child child, IMonitor monitor) {
             string spriteTextureName = string.Concat("Characters/Toddler",
-                                                     (child.Gender == 0) ? "" : "_girl",
+                                                     (child.Gender == Gender.Male) ? "" : "_girl",
                                                      child.darkSkinned.Value ? "_dark" : "");
 
             var sprite = new AnimatedSprite(spriteTextureName, 0, 16, 32);

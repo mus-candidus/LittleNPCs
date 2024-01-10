@@ -95,7 +95,7 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[0]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].Gender.ToTokenReturnValue(),
+                        (unused) => cachedLittleNPCs_[0].Gender.ToString().ToLower().ToTokenReturnValue(),
                         false
                     )
                 );
@@ -149,7 +149,7 @@ namespace LittleNPCs.Framework {
                     new TokenCore(
                         () => cachedLittleNPCs_[1]?.LoadedFrom != LittleNPCInfo.LoadState.None,
                         () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].Gender.ToTokenReturnValue(),
+                        (unused) => cachedLittleNPCs_[1].Gender.ToString().ToLower().ToTokenReturnValue(),
                         false
                     )
                 );
@@ -189,7 +189,7 @@ namespace LittleNPCs.Framework {
                             return (input switch {
                                 "Name"        => cachedLittleNPCs_[0].Name,
                                 "DisplayName" => cachedLittleNPCs_[0].DisplayName,
-                                "Gender"      => cachedLittleNPCs_[0].Gender,
+                                "Gender"      => cachedLittleNPCs_[0].Gender.ToString().ToLower(),
                                 "BirthSeason" => cachedLittleNPCs_[0].Birthday.Season.ToString(),
                                 "BirthDay"    => cachedLittleNPCs_[0].Birthday.Day.ToString(),
                                 "Age"         => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString(),
@@ -208,7 +208,7 @@ namespace LittleNPCs.Framework {
                             return (input switch {
                                 "Name"        => cachedLittleNPCs_[1].Name,
                                 "DisplayName" => cachedLittleNPCs_[1].DisplayName,
-                                "Gender"      => cachedLittleNPCs_[1].Gender,
+                                "Gender"      => cachedLittleNPCs_[1].Gender.ToString().ToLower(),
                                 "BirthSeason" => cachedLittleNPCs_[1].Birthday.Season.ToString(),
                                 "BirthDay"    => cachedLittleNPCs_[1].Birthday.Day.ToString(),
                                 "Age"         => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString(),
