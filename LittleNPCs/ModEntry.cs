@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -55,6 +56,7 @@ namespace LittleNPCs {
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
+            helper.Events.Content.AssetRequested += OnAssetRequested;
             helper.Events.GameLoop.OneSecondUpdateTicking += OnOneSecondUpdateTicking;
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
@@ -127,6 +129,11 @@ namespace LittleNPCs {
 
             // Set the counter for OnOneSecondUpdateTicking().
             relativeSeconds_ = 0;
+        }
+
+        private void OnAssetRequested(object sender, AssetRequestedEventArgs e) {
+            ProvideFallbackAssets(e, 0);
+            ProvideFallbackAssets(e, 1);
         }
 
         private void OnOneSecondUpdateTicking(object sender, OneSecondUpdateTickingEventArgs e) {
@@ -318,6 +325,50 @@ namespace LittleNPCs {
 
                     this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", StardewModdingAPI.LogLevel.Info);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Provides fallback assets from game content.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="index"></param>
+        private void ProvideFallbackAssets(AssetRequestedEventArgs e, int index) {
+            var littleNPC = new LittleNPCInfo(index, this.Monitor);
+
+            // We also use the sprite texture as portrait but should be good enough as a fallback.
+            string spriteTextureName = string.Concat("Characters/Toddler",
+                                                     (littleNPC.Gender == Gender.Male) ? "" : "_girl");
+
+            // Fallback dialogue.
+            string message = string.Concat("Hi dad! Please install a content pack for me.",
+                                           "^Hi mom! Please install a content pack for me.",
+                                           "#$e#",
+                                           "Look for StardewValley Mod 15152 on nexusmods.com for details.");
+            var dialogue = new Dictionary<string, string>() {
+                { "Mon", message },
+                { "Tue", message },
+                { "Wed", message },
+                { "Thu", message },
+                { "Fri", message },
+                { "Sat", message },
+                { "Sun", message }
+            };
+
+            string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+
+            if (e.NameWithoutLocale.IsEquivalentTo($"Characters/{prefix}{littleNPC.DisplayName}")) {
+                // Fallback assets are loaded with low prioriy.
+                e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo($"Portraits/{prefix}{littleNPC.DisplayName}")) {
+                // This uses part of the sprite texture as portrait but should be good enough as a fallback.
+                e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
+            }
+
+            if (e.NameWithoutLocale.IsEquivalentTo($"Characters/Dialogue/{prefix}{littleNPC.DisplayName}")) {
+                e.LoadFrom(() => dialogue, AssetLoadPriority.Low);
             }
         }
 

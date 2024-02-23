@@ -44,13 +44,6 @@ namespace LittleNPCs.Framework {
         /// <value></value>
         public int ChildIndex { get; private set; }
 
-        /// <summary>
-        /// Flag to determine whether to use fallback assets.</code>
-        /// This is necessary to prevent crashing when no content pack is installed.
-        /// </summary>
-        /// <value></value>
-        public bool UseFallbackAssets { get; private set; }
-
         protected LittleNPC(IMonitor monitor,
                             Child child,
                             AnimatedSprite sprite,
@@ -59,12 +52,10 @@ namespace LittleNPCs.Framework {
                             int facingDir,
                             string name,
                             string displayName,
-                            Texture2D portrait,
-                            bool useFallbackAssets)
+                            Texture2D portrait)
         : base(sprite, position, defaultMap, facingDir, name, portrait, false) {
             monitor_ = monitor;
             WrappedChild = child;
-            UseFallbackAssets = useFallbackAssets;
 
             // Take hat off because it stays visible even when making a child invisible.
             if (WrappedChild.hat.Value is not null) {
@@ -103,45 +94,18 @@ namespace LittleNPCs.Framework {
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
             string assetName = LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name);
 
-            // Check whether if can load the assets, else providing defaults.
-            bool hasSprite = Game1.content.DoesAssetExist<Texture2D>($"Characters/{assetName}");
-            bool hasPortrait = Game1.content.DoesAssetExist<Texture2D>($"Portraits/{assetName}");
-            bool useFallbackAssets = (!hasSprite || !hasPortrait);
-
-            (AnimatedSprite sprite, Texture2D portrait) assets
-                = useFallbackAssets ? ProvideFallbackAssets(child, monitor)
-                                    : (new AnimatedSprite($"Characters/{assetName}", 0, 16, 32), Game1.content.Load<Texture2D>($"Portraits/{assetName}"));
+            AnimatedSprite sprite = new AnimatedSprite($"Characters/{assetName}", 0, 16, 32);
+            Texture2D portrait = Game1.content.Load<Texture2D>($"Portraits/{assetName}");
 
             var npc = new LittleNPC(monitor,
                                     child,
-                                    assets.sprite,
+                                    sprite,
                                     bedSpot,
                                     child.DefaultMap,
                                     child.FacingDirection,
                                     assetName,
                                     child.Name,
-                                    assets.portrait,
-                                    useFallbackAssets);
-
-            if (npc.UseFallbackAssets) {
-                var message = new Dialogue(npc, null, string.Concat("Hi dad! Please install a content pack for me.",
-                                                                   "^Hi mom! Please install a content pack for me.",
-                                                                   "#$e#",
-                                                                   "Look for StardewValley Mod 15152 on nexusmods.com for details."));
-                npc.setNewDialogue(message);
-
-                monitor.Log(string.Join(' ',
-                                        $"Loaded default dialogue for {child.Name}.",
-                                        "Please install a content pack to avoid that.",
-                                        "See https://www.nexusmods.com/stardewvalley/15152 for details."), LogLevel.Warn);
-            }
-
-            monitor.Log(string.Join(' ',
-                                    $"Created LittleNPC {npc.Name}:",
-                                    $"index {npc.ChildIndex},",
-                                    $"bed spot {Utility.Vector2ToPoint(bedSpot / 64f)},",
-                                    $"birthday {new SDate(npc.Birthday_Day, npc.Birthday_Season)}",
-                                    $"({npc.WrappedChild.daysOld.Value} days ago)"), LogLevel.Info);
+                                    portrait);
 
             // Generate and set NPCDispositions.
             // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
@@ -192,7 +156,7 @@ namespace LittleNPCs.Framework {
 
             // Reload schedule.
             string success = npc.TryLoadSchedule() ? "successfully" : "unsuccessfully";
-            monitor.Log($"Schedule or {npc.Name} loaded {success}.", LogLevel.Info);
+            monitor.Log($"Schedule for {npc.Name} loaded {success}.", LogLevel.Info);
 
             // Check if NPCParseMasterSchedulePatch ran.
             if (npc.ParseMasterSchedulePatchExecuted) {
@@ -208,37 +172,6 @@ namespace LittleNPCs.Framework {
             }
 
             return npc;
-        }
-
-        /// <summary>
-        /// Provides fallback assets from game content.
-        /// </summary>
-        /// <param name="child"></param>
-        /// <returns></returns>
-        private static (AnimatedSprite sprite, Texture2D portrait) ProvideFallbackAssets(Child child, IMonitor monitor) {
-            string spriteTextureName = string.Concat("Characters/Toddler",
-                                                     (child.Gender == Gender.Male) ? "" : "_girl",
-                                                     child.darkSkinned.Value ? "_dark" : "");
-
-            var sprite = new AnimatedSprite(spriteTextureName, 0, 16, 32);
-
-            // This uses part of the sprite texture as portrait but should be good enough as a fallback.
-            var portrait = Game1.content.Load<Texture2D>(spriteTextureName);
-
-            monitor.Log(string.Join(' ',
-                                    $"No sprite found for {child.Name}, loaded default toddler sprite.",
-                                    "Please install a content pack to avoid that.",
-                                    "See https://www.nexusmods.com/stardewvalley/15152 for details."), LogLevel.Warn);
-
-            return (sprite, portrait);
-        }
-
-        /// <inheritdoc/>
-        public override void ChooseAppearance(LocalizedContentManager content = null) {
-            if (!UseFallbackAssets) {
-                // We must not call this method when using fallback assets.
-                base.ChooseAppearance(content);
-            }
         }
 
         /// <inheritdoc/>
