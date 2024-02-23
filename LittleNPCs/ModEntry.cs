@@ -341,10 +341,16 @@ namespace LittleNPCs {
                                                      (littleNPC.Gender == Gender.Male) ? "" : "_girl");
 
             // Fallback dialogue.
-            string message = string.Concat("Hi dad! Please install a content pack for me.",
+            string message = Game1.IsMultiplayer
+                           ? string.Concat("Hi @! Don't worry that I'm still a toddler, ",
+                                           "multiplayer support is not easy to implement.",
+                                           "#$e#",
+                                           "This is work in progress.")
+                           : string.Concat("Hi dad! Please install a content pack for me.",
                                            "^Hi mom! Please install a content pack for me.",
                                            "#$e#",
                                            "Look for StardewValley Mod 15152 on nexusmods.com for details.");
+
             var dialogue = new Dictionary<string, string>() {
                 { "Mon", message },
                 { "Tue", message },
@@ -357,17 +363,17 @@ namespace LittleNPCs {
 
             string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
 
-            if (e.NameWithoutLocale.IsEquivalentTo($"Characters/{prefix}{littleNPC.DisplayName}")) {
+            if (e.NameWithoutLocale.StartsWith($"Characters/{prefix}")) {
                 // Fallback assets are loaded with low prioriy.
                 e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
             }
 
-            if (e.NameWithoutLocale.IsEquivalentTo($"Portraits/{prefix}{littleNPC.DisplayName}")) {
+            if (e.NameWithoutLocale.StartsWith($"Portraits/{prefix}")) {
                 // This uses part of the sprite texture as portrait but should be good enough as a fallback.
                 e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
             }
 
-            if (e.NameWithoutLocale.IsEquivalentTo($"Characters/Dialogue/{prefix}{littleNPC.DisplayName}")) {
+            if (e.NameWithoutLocale.StartsWith($"Characters/Dialogue/{prefix}")) {
                 e.LoadFrom(() => dialogue, AssetLoadPriority.Low);
             }
         }

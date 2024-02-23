@@ -15,6 +15,8 @@ using StardewValley.Objects;
 using StardewValley.Pathfinding;
 using StardewValley.GameData.Characters;
 
+using Netcode;
+
 
 namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
@@ -29,7 +31,7 @@ namespace LittleNPCs.Framework {
         /// Wrapped child object. Required to replace the corresponding LittleNPC object on save.
         /// </summary>
         /// <value></value>
-        public Child WrappedChild { get; private set; }
+        private readonly NetRef<Child> wrappedChild_ = new NetRef<Child>();
         
         /// <summary>
         /// Wrapped child's hat, if any. Must be removed during the day.
@@ -37,12 +39,24 @@ namespace LittleNPCs.Framework {
         /// <value></value>
         public Hat WrappedChildHat { get; private set; }
 
+        public Child WrappedChild {
+            get => wrappedChild_.Value;
+        }
+
+        protected override void initNetFields() {
+            base.initNetFields();
+            base.NetFields.AddField(wrappedChild_);
+        }
+
         /// <summary>
         /// Cached child index. The method <code>Child.GetChildIndex()</code>
         /// becomes useless after removing any child object so we must cache this value.
         /// </summary>
         /// <value></value>
         public int ChildIndex { get; private set; }
+
+        public LittleNPC() {
+        }
 
         protected LittleNPC(IMonitor monitor,
                             Child child,
@@ -55,7 +69,7 @@ namespace LittleNPCs.Framework {
                             Texture2D portrait)
         : base(sprite, position, defaultMap, facingDir, name, portrait, false) {
             monitor_ = monitor;
-            WrappedChild = child;
+            wrappedChild_.Value = child;
 
             // Take hat off because it stays visible even when making a child invisible.
             if (WrappedChild.hat.Value is not null) {
