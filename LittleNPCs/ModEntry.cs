@@ -143,6 +143,9 @@ namespace LittleNPCs {
             }
 
             if (LittleNPCsList.Any()) {
+                foreach (var npc in LittleNPCsList) {
+                    this.Monitor.Log($"{nameof(LittleNPCsList)} still contains {npc.Name}.", LogLevel.Warn);
+                }
                 this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
                 LittleNPCsList.Clear();
             }
@@ -188,12 +191,15 @@ namespace LittleNPCs {
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
+            this.Monitor.Log($"OnSaving", LogLevel.Warn);
+
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
-            // Local function, only needed here.
-            void ConvertLittleNPCsToChildren(Netcode.NetCollection<NPC> npcs) {
+            Utility.ForEachLocation(location => {
+                var npcs = location.characters;
                 var littleNPCsToConvert = npcs.OfType<LittleNPC>().ToList();
                 foreach (var littleNPC in littleNPCsToConvert) {
+                    this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Warn);
                     var child = littleNPC.WrappedChild;
                     // Put hat on (part of the save game).
                     if (littleNPC.WrappedChildHat is not null) {
@@ -219,29 +225,15 @@ namespace LittleNPCs {
 
                     this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
                 }
-            }
 
-            // ATTENTION: Avoid Utility.getAllCharacters(), replacing elements in the returned list doesn't work.
-            // We have to iterate over all locations instead.
-
-            // Check outdoor locations and convert LittleNPCs back if necessary.
-            foreach (GameLocation location in Game1.locations) {
-                // Plain old for-loop because we have to replace list elements.
-                var npcs = location.characters;
-                ConvertLittleNPCsToChildren(npcs);
-            }
-
-            // Check indoor locations and convert LittleNPCs back if necessary.
-            foreach (DecoratableLocation location in Game1.locations.OfType<DecoratableLocation>()) {
-                foreach (Building building in location.buildings) {
-                    if (building.indoors.Value is not null) {
-                        var npcs = building.indoors.Value.characters;
-                        ConvertLittleNPCsToChildren(npcs);
-                    }
-                }
-            }
+                // Continue iterating.
+                return true;
+            });
 
             if (LittleNPCsList.Any()) {
+                foreach (var npc in LittleNPCsList) {
+                    this.Monitor.Log($"{nameof(LittleNPCsList)} still contains {npc.Name}.", LogLevel.Warn);
+                }
                 this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
                 LittleNPCsList.Clear();
             }
