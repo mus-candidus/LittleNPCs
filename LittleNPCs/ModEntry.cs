@@ -27,7 +27,7 @@ namespace LittleNPCs {
         private int? relativeSeconds_;
 
         // We have to keep track of LittleNPCs vor various reasons.
-        public static List<LittleNPC> LittleNPCsList { get; } = new List<LittleNPC>();
+        public static Dictionary<LittleNPC, Child> TrackedLittleNPCs { get; } = new Dictionary<LittleNPC, Child>();
 
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
@@ -142,12 +142,12 @@ namespace LittleNPCs {
                 return;
             }
 
-            if (LittleNPCsList.Any()) {
-                foreach (var npc in LittleNPCsList) {
-                    this.Monitor.Log($"{nameof(LittleNPCsList)} still contains {npc.Name}.", LogLevel.Warn);
+            if (TrackedLittleNPCs.Any()) {
+                foreach (var npc in TrackedLittleNPCs) {
+                    this.Monitor.Log($"{nameof(TrackedLittleNPCs)} still contains {npc.Key.Name}.", LogLevel.Warn);
                 }
-                this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
-                LittleNPCsList.Clear();
+                this.Monitor.Log($"{nameof(TrackedLittleNPCs)} is not empty, clearing it.", LogLevel.Error);
+                TrackedLittleNPCs.Clear();
             }
 
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
@@ -179,64 +179,66 @@ namespace LittleNPCs {
                     }
 
                     // Add to tracking list.
-                    LittleNPCsList.Add(littleNPC);
+                    TrackedLittleNPCs[littleNPC] = child;
 
                     this.Monitor.Log($"Added LittleNPC {littleNPC.Name}, deactivated child {child.Name}.", LogLevel.Info);
             }
 
             if (config_.DoChildrenVisitVolcanoIsland) {
                 // Add random island schedule.
-                AddRandomIslandSchedule(LittleNPCsList);
+                AddRandomIslandSchedule(TrackedLittleNPCs.Keys.ToList());
             }
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
-            this.Monitor.Log($"OnSaving", LogLevel.Warn);
-
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
-            Utility.ForEachLocation(location => {
-                var npcs = location.characters;
-                var littleNPCsToConvert = npcs.OfType<LittleNPC>().ToList();
-                foreach (var littleNPC in littleNPCsToConvert) {
-                    this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Warn);
-                    var child = littleNPC.WrappedChild;
-                    // Put hat on (part of the save game).
-                    if (littleNPC.WrappedChildHat is not null) {
-                        child.hat.Value = littleNPC.WrappedChildHat;
-                    }
+            // Only convert items in our tracking list.
+            foreach (var item in TrackedLittleNPCs) {
+                var littleNPC = item.Key;
+                var child = item.Value;
 
-                    // Replace LittleNPC by Child object.
-                    npcs.Remove(littleNPC);
-
-                    // Copy friendship data.
-                    if (Game1.player.friendshipData.TryGetValue(littleNPC.Name, out var friendship)) {
-                        Game1.player.friendshipData[child.Name] = friendship;
-                    }
-
-                    // Set child visible before saving.
-                    child.IsInvisible = false;
-
-                    // Remove NPCDispositions to prevent auto-load on next day.
-                    npcDispositions.Remove(littleNPC.Name);
-
-                    // Remove from tracking list.
-                    LittleNPCsList.Remove(littleNPC);
-
-                    this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
+                this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Warn);
+                    
+                // Put hat on (part of the save game).
+                if (littleNPC.WrappedChildHat is not null) {
+                    child.hat.Value = littleNPC.WrappedChildHat;
                 }
 
-                // Continue iterating.
-                return true;
-            });
-
-            if (LittleNPCsList.Any()) {
-                foreach (var npc in LittleNPCsList) {
-                    this.Monitor.Log($"{nameof(LittleNPCsList)} still contains {npc.Name}.", LogLevel.Warn);
+                // Copy friendship data.
+                if (Game1.player.friendshipData.TryGetValue(littleNPC.Name, out var friendship)) {
+                    Game1.player.friendshipData[child.Name] = friendship;
                 }
-                this.Monitor.Log($"{nameof(LittleNPCsList)} is not empty, clearing it.", LogLevel.Error);
-                LittleNPCsList.Clear();
+
+                // Set child visible before saving.
+                child.IsInvisible = false;
+
+                // Remove NPCDispositions to prevent auto-load on next day.
+                npcDispositions.Remove(littleNPC.Name);
+
+                // Remove from game.
+                bool success = false;
+                Utility.ForEachLocation(location => {
+                    for (int i = 0; i < location.characters.Count; ++i) {
+                        if (location.characters[i].Name == littleNPC.Name) {
+                            this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
+                            location.characters.RemoveAt(i);
+                            success = true;
+                        
+                            break;
+                        }
+                    }
+                
+                    return true;
+                });
+
+                if (!success) {
+                    this.Monitor.Log($"Failed to remove LittleNPC {littleNPC.Name} from tracking list.", LogLevel.Error);
+                }
             }
+
+            // Clear tracking list.
+            TrackedLittleNPCs.Clear();
 
             relativeSeconds_ = null;
         }
@@ -377,7 +379,7 @@ namespace LittleNPCs {
         /// <returns></returns>
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
-            return LittleNPCsList.FirstOrDefault(c => c.ChildIndex == childIndex);
+            return TrackedLittleNPCs.Keys.FirstOrDefault(c => c.ChildIndex == childIndex);
         }
 
         /// <summary>

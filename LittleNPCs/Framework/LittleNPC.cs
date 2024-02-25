@@ -31,21 +31,26 @@ namespace LittleNPCs.Framework {
         /// Wrapped child object. Required to replace the corresponding LittleNPC object on save.
         /// </summary>
         /// <value></value>
-        private readonly NetRef<Child> wrappedChild_ = new NetRef<Child>();
+        private readonly NetRef<Hat> wrappedChildHat_ = new NetRef<Hat>();
+
+        private readonly NetLong idOfParent_ = new NetLong();
+
+        internal long IdOfParent {
+            get => idOfParent_.Value;
+        }
         
         /// <summary>
         /// Wrapped child's hat, if any. Must be removed during the day.
         /// </summary>
         /// <value></value>
-        public Hat WrappedChildHat { get; private set; }
-
-        public Child WrappedChild {
-            get => wrappedChild_.Value;
+        public Hat WrappedChildHat {
+            get => wrappedChildHat_.Value;
         }
+
 
         protected override void initNetFields() {
             base.initNetFields();
-            base.NetFields.AddField(wrappedChild_);
+            base.NetFields.AddField(wrappedChildHat_).AddField(idOfParent_);
         }
 
         /// <summary>
@@ -69,18 +74,19 @@ namespace LittleNPCs.Framework {
                             Texture2D portrait)
         : base(sprite, position, defaultMap, facingDir, name, portrait, false) {
             monitor_ = monitor;
-            wrappedChild_.Value = child;
 
             // Take hat off because it stays visible even when making a child invisible.
-            if (WrappedChild.hat.Value is not null) {
-                WrappedChildHat = WrappedChild.hat.Value;
-                WrappedChild.hat.Value = null;
+            if (child.hat.Value is not null) {
+                wrappedChildHat_.Value = child.hat.Value;
+                child.hat.Value = null;
             }
 
             ChildIndex = child.GetChildIndex();
 
+            idOfParent_.Value = child.idOfParent.Value;
+
             // Set birthday.
-            var birthday = GetBirthday();
+            var birthday = GetBirthday(child);
             Birthday_Day = birthday.Day;
             Birthday_Season = Utility.getSeasonKey(birthday.Season);
 
@@ -91,9 +97,9 @@ namespace LittleNPCs.Framework {
             this.displayName = displayName;
 
             // Ensure that the original child stays invisible.
-            if (!WrappedChild.IsInvisible) {
-                monitor_.Log($"Made child {WrappedChild.Name} invisible.", LogLevel.Info);
-                WrappedChild.IsInvisible = true;
+            if (!child.IsInvisible) {
+                monitor_.Log($"Made child {child.Name} invisible.", LogLevel.Info);
+                child.IsInvisible = true;
             }
         }
 
@@ -400,7 +406,7 @@ namespace LittleNPCs.Framework {
         }
 
         public SDate GetBirthday() {
-            return GetBirthday(WrappedChild);
+            return new SDate(Birthday_Day, Birthday_Season);
         }
 
         public static SDate GetBirthday(Child child) {
