@@ -16,12 +16,11 @@ using StardewValley.Pathfinding;
 using StardewValley.GameData.Characters;
 
 using Netcode;
+using Newtonsoft.Json;
 
 
 namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
-        private IMonitor monitor_;
-
         private static Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
 
         // Check that NPCParseMasterSchedulePatch executed.
@@ -34,6 +33,8 @@ namespace LittleNPCs.Framework {
         private readonly NetRef<Hat> wrappedChildHat_ = new NetRef<Hat>();
 
         private readonly NetLong idOfParent_ = new NetLong();
+
+        private readonly NetString characterDataJson_ = new NetString();
 
         internal long IdOfParent {
             get => idOfParent_.Value;
@@ -50,7 +51,14 @@ namespace LittleNPCs.Framework {
 
         protected override void initNetFields() {
             base.initNetFields();
-            base.NetFields.AddField(wrappedChildHat_).AddField(idOfParent_);
+            base.NetFields.AddField(wrappedChildHat_).AddField(idOfParent_).AddField(characterDataJson_);
+
+            characterDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
+                if (newValue is not null) {
+                    AssignCharacterData(newValue);
+                }
+
+            };
         }
 
         /// <summary>
@@ -63,8 +71,7 @@ namespace LittleNPCs.Framework {
         public LittleNPC() {
         }
 
-        protected LittleNPC(IMonitor monitor,
-                            Child child,
+        protected LittleNPC(Child child,
                             AnimatedSprite sprite,
                             Vector2 position,
                             string defaultMap,
@@ -73,8 +80,6 @@ namespace LittleNPCs.Framework {
                             string displayName,
                             Texture2D portrait)
         : base(sprite, position, defaultMap, facingDir, name, portrait, false) {
-            monitor_ = monitor;
-
             // Take hat off because it stays visible even when making a child invisible.
             if (child.hat.Value is not null) {
                 wrappedChildHat_.Value = child.hat.Value;
@@ -98,7 +103,7 @@ namespace LittleNPCs.Framework {
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
-                monitor_.Log($"Made child {child.Name} invisible.", LogLevel.Info);
+                ModEntry.monitor_.Log($"Made child {child.Name} invisible.", LogLevel.Info);
                 child.IsInvisible = true;
             }
         }
@@ -111,14 +116,12 @@ namespace LittleNPCs.Framework {
                 monitor.Log($"No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
-            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
             string assetName = LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name);
 
             AnimatedSprite sprite = new AnimatedSprite($"Characters/{assetName}", 0, 16, 32);
             Texture2D portrait = Game1.content.Load<Texture2D>($"Portraits/{assetName}");
 
-            var npc = new LittleNPC(monitor,
-                                    child,
+            var npc = new LittleNPC(child,
                                     sprite,
                                     bedSpot,
                                     child.DefaultMap,
@@ -149,12 +152,34 @@ namespace LittleNPCs.Framework {
             characterData.CanReceiveGifts = true;
             var homeData = new CharacterHomeData();
             homeData.Id = "Default";
-            homeData.Location = npc.DefaultMap;
+            homeData.Location = farmHouse.Name;
             homeData.Tile = Utility.Vector2ToPoint(bedSpot / 64f);
             characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
             characterData.DisplayName = npc.displayName;
 
-            npcDispositions[npc.Name] = characterData;
+            // Serialize it to JSON to transmit it over the wire.
+            string characterDataJson = JsonConvert.SerializeObject(characterData);
+
+            // Set NetRef triggers assignment event.
+            npc.characterDataJson_.Value = characterDataJson;
+
+            return npc;
+        }
+
+        private void AssignCharacterData(string characterDataJson) {
+            ModEntry.monitor_.Log($"AssignCharacterData.", LogLevel.Warn);
+
+            CharacterData characterData = JsonConvert.DeserializeObject<CharacterData>(characterDataJson);
+
+            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
+
+            if (npcDispositions.TryGetValue(Name, out _)) {
+                ModEntry.monitor_.Log($"Character data for {Name} already set, skipping.", LogLevel.Warn);
+
+                return;
+            }
+
+            npcDispositions[Name] = characterData;
 
             // Subset of character data for logging purposes. Although there's no dispositions string in SDV 1.6 anymore
             // we create something similar because a serialied CharacterData object seems too heavy for just logging.
@@ -164,34 +189,32 @@ namespace LittleNPCs.Framework {
                               characterData.Gender,
                               characterData.HomeRegion,
                               $"{characterData.BirthSeason} {characterData.BirthDay}",
-                              $"{homeData.Location} {homeData.Tile}",
+                              $"{characterData.Home.First().Location} {characterData.Home.First().Tile}",
                               characterData.DisplayName);
 
-            monitor.Log($"Created character data for {npc.Name}: {loggedCharacterData}", LogLevel.Info);
+            ModEntry.monitor_.Log($"Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
 
             // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
             // This is not a problem since we generated dispositions with matching default values beforehand.
             // We must not call this method in the constructor since it is virtual.
-            npc.reloadData();
+            reloadData();
 
             // Reload schedule.
-            string success = npc.TryLoadSchedule() ? "successfully" : "unsuccessfully";
-            monitor.Log($"Schedule for {npc.Name} loaded {success}.", LogLevel.Info);
+            string success = TryLoadSchedule() ? "successfully" : "unsuccessfully";
+            ModEntry.monitor_.Log($"Schedule for {Name} loaded {success}.", LogLevel.Info);
 
             // Check if NPCParseMasterSchedulePatch ran.
-            if (npc.ParseMasterSchedulePatchExecuted) {
-                monitor.Log($"NPCParseMasterSchedulePatch executed for {npc.Name}.", LogLevel.Info);
+            if (ParseMasterSchedulePatchExecuted) {
+                ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
             }
             else {
-                monitor.Log($"NPCParseMasterSchedulePatch didn't execute for {npc.Name}. Schedule won't work.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
 
                 // NPC's default location might have been messed up on error.
-                npc.reloadDefaultLocation();
+                reloadDefaultLocation();
 
-                monitor.Log($"Reset default location of {npc.Name} to {npc.DefaultMap}, {Utility.Vector2ToPoint(npc.DefaultPosition / 64f)}.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
             }
-
-            return npc;
         }
 
         /// <inheritdoc/>
@@ -403,6 +426,10 @@ namespace LittleNPCs.Framework {
                 temporaryController = null;
                 ClearSchedule();
             }
+        }
+
+        public override void handleMasterScheduleFileLoadError(Exception e) {
+            ModEntry.monitor_.Log(e.ToString(), LogLevel.Error);
         }
 
         public SDate GetBirthday() {

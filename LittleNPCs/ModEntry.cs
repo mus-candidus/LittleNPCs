@@ -22,6 +22,8 @@ namespace LittleNPCs {
     public class ModEntry : Mod {
         public static IModHelper helper_;
 
+        public static IMonitor monitor_;
+
         public static ModConfig config_;
 
         private int? relativeSeconds_;
@@ -31,6 +33,7 @@ namespace LittleNPCs {
 
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
+            ModEntry.monitor_ = this.Monitor;
 
             // Check for LittleNPC content packs. This is quite heavy but the only way I know so far:
             // We have to check for ContentPatcher packs that depend on LittleNPCs.
