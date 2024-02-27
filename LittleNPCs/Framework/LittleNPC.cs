@@ -36,6 +36,10 @@ namespace LittleNPCs.Framework {
 
         private readonly NetString characterDataJson_ = new NetString();
 
+        private readonly NetString defaultLocationName_ = new NetString();
+
+        private readonly NetString masterScheduleDataJson_ = new NetString();
+
         internal long IdOfParent {
             get => idOfParent_.Value;
         }
@@ -51,13 +55,46 @@ namespace LittleNPCs.Framework {
 
         protected override void initNetFields() {
             base.initNetFields();
-            base.NetFields.AddField(wrappedChildHat_).AddField(idOfParent_).AddField(characterDataJson_);
+            base.NetFields.AddField(wrappedChildHat_)
+                          .AddField(idOfParent_)
+                          .AddField(characterDataJson_)
+                          .AddField(defaultLocationName_)
+                          .AddField(masterScheduleDataJson_);
 
             characterDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
                 if (newValue is not null) {
                     AssignCharacterData(newValue);
+                    ModEntry.monitor_.Log($"AssignCharacterData() finished.", LogLevel.Warn);
                 }
+            };
 
+            masterScheduleDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
+                if (newValue is not null) {
+                    _masterScheduleData = JsonConvert.DeserializeObject<Dictionary<string, string>>(newValue);
+                    ModEntry.monitor_.Log($"Setting _masterScheduleData finished.", LogLevel.Warn);
+
+                    // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
+                    // This is not a problem since we generated dispositions with matching default values beforehand.
+                    // We must not call this method in the constructor since it is virtual.
+                    reloadData();
+
+                    // Reload schedule.
+                    string success = TryLoadSchedule() ? "successfully" : "unsuccessfully";
+                    ModEntry.monitor_.Log($"Schedule for {Name} loaded {success}.", LogLevel.Info);
+
+                    // Check if NPCParseMasterSchedulePatch ran.
+                    if (ParseMasterSchedulePatchExecuted) {
+                        ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
+                    }
+                    else {
+                        ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
+
+                        // NPC's default location might have been messed up on error.
+                        reloadDefaultLocation();
+
+                        ModEntry.monitor_.Log($"Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
+                    }
+                }
             };
         }
 
@@ -152,10 +189,22 @@ namespace LittleNPCs.Framework {
             characterData.CanReceiveGifts = true;
             var homeData = new CharacterHomeData();
             homeData.Id = "Default";
-            homeData.Location = farmHouse.Name;
+            homeData.Location = farmHouse.NameOrUniqueName;
             homeData.Tile = Utility.Vector2ToPoint(bedSpot / 64f);
             characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
             characterData.DisplayName = npc.displayName;
+
+            npc.defaultLocationName_.Name = farmHouse.NameOrUniqueName;
+
+            // Load schedule to put it into a NetRef.
+            string success = npc.TryLoadSchedule() ? "successfully" : "unsuccessfully";
+            ModEntry.monitor_.Log($"Schedule for {assetName} loaded {success}.", LogLevel.Info);
+
+            // Serialize it to JSON to transmit it over the wire.
+            string masterScheduleDataJson = JsonConvert.SerializeObject(npc._masterScheduleData);
+
+            // Set NetRef triggers assignment event.
+            npc.masterScheduleDataJson_.Value = masterScheduleDataJson;
 
             // Serialize it to JSON to transmit it over the wire.
             string characterDataJson = JsonConvert.SerializeObject(characterData);
@@ -167,7 +216,7 @@ namespace LittleNPCs.Framework {
         }
 
         private void AssignCharacterData(string characterDataJson) {
-            ModEntry.monitor_.Log($"AssignCharacterData.", LogLevel.Warn);
+            ModEntry.monitor_.Log($"AssignCharacterData() started.", LogLevel.Warn);
 
             CharacterData characterData = JsonConvert.DeserializeObject<CharacterData>(characterDataJson);
 
@@ -220,6 +269,7 @@ namespace LittleNPCs.Framework {
         /// <inheritdoc/>
         public override void performTenMinuteUpdate(int timeOfDay, GameLocation l) {
             FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.player);
+            // Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent));
             if (farmHouse.characters.Contains(this)) {
                 ModConfig config = ModEntry.config_;
                 // Send children to bed when inside home.
@@ -330,7 +380,7 @@ namespace LittleNPCs.Framework {
                 }
 
                 // If I have curfew, override the normal behavior.
-                if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Game1.getLocationFromName("FarmHouse"))) {
+                if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Game1.getLocationFromName(defaultLocationName_.Value, true))) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
                         value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
@@ -411,7 +461,13 @@ namespace LittleNPCs.Framework {
 
         protected override void prepareToDisembarkOnNewSchedulePath() {
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
-                temporaryController = new PathFindController(this, getHome(), new Point(getHome().warps[0].X, getHome().warps[0].Y), 2, true) {
+                //ModEntry.monitor_.Log($"prepareToDisembarkOnNewSchedulePath: {farmHouse.Name}", LogLevel.Warn);
+                //var home = farmHouse;//Game1.RequireLocation(DefaultMap, true);// getHome();
+                //var home = Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent));
+                //var home = Utility.getHomeOfFarmer(Game1.player);
+                var home = getHome();
+                ModEntry.monitor_.Log($"prepareToDisembarkOnNewSchedulePath: {home.uniqueName.Value}", LogLevel.Warn);
+                temporaryController = new PathFindController(this, home, new Point(home.warps[0].X, home.warps[0].Y), 2, true) {
                     NPCSchedule = true
                 };
                 if (temporaryController.pathToEndPoint is null || temporaryController.pathToEndPoint.Count <= 0) {
