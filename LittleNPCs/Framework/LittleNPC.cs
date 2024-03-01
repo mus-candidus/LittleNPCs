@@ -20,14 +20,14 @@ using Newtonsoft.Json;
 
 
 namespace LittleNPCs.Framework {
-    record class TransferData(CharacterData CharacterData, Dictionary<string, string> MasterScheduleData) {
-    }
-
     public class LittleNPC : NPC {
+        private record class TransferData(CharacterData CharacterData, Dictionary<string, string> MasterScheduleData) {
+        }
+
         private static Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
 
         // Check that NPCParseMasterSchedulePatch executed.
-        internal bool ParseMasterSchedulePatchExecuted { get; set; }
+        private bool ParseMasterSchedulePatchExecuted { get; set; }
 
         /// <summary>
         /// Wrapped child object. Required to replace the corresponding LittleNPC object on save.
@@ -35,13 +35,7 @@ namespace LittleNPCs.Framework {
         /// <value></value>
         private readonly NetRef<Hat> wrappedChildHat_ = new NetRef<Hat>();
 
-        private readonly NetLong idOfParent_ = new NetLong();
-
         private readonly NetString transferDataJson_ = new NetString();
-
-        internal long IdOfParent {
-            get => idOfParent_.Value;
-        }
         
         /// <summary>
         /// Wrapped child's hat, if any. Must be removed during the day.
@@ -55,7 +49,6 @@ namespace LittleNPCs.Framework {
         protected override void initNetFields() {
             base.initNetFields();
             base.NetFields.AddField(wrappedChildHat_)
-                          .AddField(idOfParent_)
                           .AddField(transferDataJson_);
 
             transferDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
@@ -91,8 +84,6 @@ namespace LittleNPCs.Framework {
             }
 
             ChildIndex = child.GetChildIndex();
-
-            idOfParent_.Value = child.idOfParent.Value;
 
             // Set birthday.
             var birthday = GetBirthday(child);
@@ -227,8 +218,7 @@ namespace LittleNPCs.Framework {
 
         /// <inheritdoc/>
         public override void performTenMinuteUpdate(int timeOfDay, GameLocation l) {
-            //FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.player);
-            FarmHouse farmHouse = Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent));
+            FarmHouse farmHouse = getHome() as FarmHouse;
             if (farmHouse?.characters.Contains(this) ?? false) {
                 ModConfig config = ModEntry.config_;
                 // Send children to bed when inside home.
@@ -339,8 +329,7 @@ namespace LittleNPCs.Framework {
                 }
 
                 // If I have curfew, override the normal behavior.
-                //if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Game1.getLocationFromName(defaultLocationName_.Value, true))) {
-                if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent)))) {
+                if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(getHome())) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
                         value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
@@ -421,8 +410,7 @@ namespace LittleNPCs.Framework {
 
         protected override void prepareToDisembarkOnNewSchedulePath() {
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
-                //var home = getHome();
-                var home = Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent));
+                var home = getHome();
                 ModEntry.monitor_.Log($"[{GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}", LogLevel.Info);
                 temporaryController = new PathFindController(this, home, new Point(home.warps[0].X, home.warps[0].Y), 2, true) {
                     NPCSchedule = true

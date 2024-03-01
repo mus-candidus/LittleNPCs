@@ -45,7 +45,7 @@ namespace LittleNPCs.Framework.Patches {
             __instance.location = Game1.getLocationFromName(warp.TargetName);
             // This is normally only for married NPCs.
             if (warp.TargetName == "FarmHouse" || warp.TargetName == "Cabin") {
-                __instance.location = Utility.getHomeOfFarmer(Game1.getFarmer(littleNPC.IdOfParent));
+                __instance.location = littleNPC.getHome();
                 warp = new Warp(warp.X, warp.Y, __instance.location.Name, (__instance.location as FarmHouse).getEntryLocation().X, (__instance.location as FarmHouse).getEntryLocation().Y, false);
                 if (littleNPC.temporaryController is not null && littleNPC.controller is not null) {
                     littleNPC.controller.location = __instance.location;
