@@ -61,7 +61,6 @@ namespace LittleNPCs.Framework {
             transferDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
                 if (newValue is not null) {
                     AssignTransferData(newValue);
-                    ModEntry.monitor_.Log($"AssignCharacterData() finished.", LogLevel.Warn);
                 }
             };
         }
@@ -108,7 +107,7 @@ namespace LittleNPCs.Framework {
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
-                ModEntry.monitor_.Log($"Made child {child.Name} invisible.", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] Made child {child.Name} invisible.", LogLevel.Info);
                 child.IsInvisible = true;
             }
         }
@@ -118,7 +117,7 @@ namespace LittleNPCs.Framework {
             // (0, 0) means there's noe bed available and the child will stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
                 bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1)) * 64f;
-                monitor.Log($"No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
+                monitor.Log($"[{GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
             string assetName = LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name);
@@ -163,8 +162,7 @@ namespace LittleNPCs.Framework {
             characterData.DisplayName = npc.displayName;
 
             // Load schedule to put it into a NetRef.
-            string success = npc.TryLoadSchedule() ? "successfully" : "unsuccessfully";
-            ModEntry.monitor_.Log($"Schedule for {assetName} loaded {success}.", LogLevel.Info);
+            npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
             TransferData transferData = new TransferData(characterData, npc._masterScheduleData);
@@ -178,19 +176,12 @@ namespace LittleNPCs.Framework {
         }
 
         private void AssignTransferData(string transferDataJson) {
-            ModEntry.monitor_.Log($"AssignCharacterData() started.", LogLevel.Warn);
-
             TransferData transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
 
             CharacterData characterData = transferData.CharacterData;
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
-            if (npcDispositions.TryGetValue(Name, out _)) {
-                ModEntry.monitor_.Log($"Character data for {Name} already set, skipping.", LogLevel.Warn);
-
-                //return;
-            }
-            else {
+            if (!npcDispositions.TryGetValue(Name, out _)) {
                 npcDispositions[Name] = characterData;
 
                 // Subset of character data for logging purposes. Although there's no dispositions string in SDV 1.6 anymore
@@ -204,31 +195,33 @@ namespace LittleNPCs.Framework {
                                   $"{characterData.Home.First().Location} {characterData.Home.First().Tile}",
                                   characterData.DisplayName);
 
-                ModEntry.monitor_.Log($"Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
 
-            _masterScheduleData = transferData.MasterScheduleData;
+            // Setting schedules is not necessary on multiplayer clients, all schedules run on the host.
+            if (!Game1.IsMasterGame) {
+                return;
+            }
 
-            // ATTENTION: NPC.reloadData() parses dispositions and resets DefaultMap and DefaultPosition for non-married NPCs.
-            // This is not a problem since we generated dispositions with matching default values beforehand.
-            // We must not call this method in the constructor since it is virtual.
-            reloadData();
+            // Make getMasterScheduleRawData() work without overriding it (which wouldn't be possible anyway).
+            _masterScheduleData = transferData.MasterScheduleData;
+            _hasLoadedMasterScheduleData = true;
 
             // Reload schedule.
             string success = TryLoadSchedule() ? "successfully" : "unsuccessfully";
-            ModEntry.monitor_.Log($"Schedule for {Name} loaded {success}.", LogLevel.Info);
+            ModEntry.monitor_.Log($"[{GetHostTag()}] Schedule for {Name} loaded {success}.", LogLevel.Info);
 
             // Check if NPCParseMasterSchedulePatch ran.
             if (ParseMasterSchedulePatchExecuted) {
-                ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
             }
             else {
-                ModEntry.monitor_.Log($"NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
 
                 // NPC's default location might have been messed up on error.
                 reloadDefaultLocation();
 
-                ModEntry.monitor_.Log($"Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
             }
         }
 
@@ -430,7 +423,7 @@ namespace LittleNPCs.Framework {
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
                 //var home = getHome();
                 var home = Utility.getHomeOfFarmer(Game1.getFarmerMaybeOffline(IdOfParent));
-                ModEntry.monitor_.Log($"prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}", LogLevel.Info);
                 temporaryController = new PathFindController(this, home, new Point(home.warps[0].X, home.warps[0].Y), 2, true) {
                     NPCSchedule = true
                 };
@@ -449,7 +442,7 @@ namespace LittleNPCs.Framework {
         }
 
         public override void handleMasterScheduleFileLoadError(Exception e) {
-            ModEntry.monitor_.Log($"MasterScheduleFileLoadError: {e}", LogLevel.Error);
+            ModEntry.monitor_.Log($"[{GetHostTag()}] MasterScheduleFileLoadError: {e.Message}", LogLevel.Error);
         }
 
         public SDate GetBirthday() {
@@ -469,6 +462,11 @@ namespace LittleNPCs.Framework {
             }
 
             return birthday;
+        }
+
+        private static string GetHostTag()
+        {
+            return Game1.IsMasterGame ? "Host" : "Client";
         }
     }
 }
