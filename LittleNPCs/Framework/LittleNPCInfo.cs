@@ -89,7 +89,7 @@ namespace LittleNPCs.Framework {
             // Remove spaces. This could to equal names but there's still the prefix to distinguish them. 
             string sanitizedChildName = childName.Replace(' ', '_');
             
-            return $"{prefix}{sanitizedChildName}";
+            return $"{prefix}{sanitizedChildName}{Game1.player.UniqueMultiplayerID}";
         }
     }
 }
