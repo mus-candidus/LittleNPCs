@@ -332,7 +332,7 @@ namespace LittleNPCs.Framework {
                 if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(getHome())) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
-                        value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", -1, 23, 3, null, null);
+                        value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", 10, 23, 3, null, null);
                         queuedSchedulePaths.Clear();
                         queuedSchedulePaths.Add(value);
                     }
@@ -383,7 +383,7 @@ namespace LittleNPCs.Framework {
             // Scheduling code can use "bed" to refer to the usual last stop of an NPC.
             // For a LittleNPC, this is always the bus stop, so I can just do the replacement here.
             if (rawData.EndsWith("bed")) {
-                rawData = rawData[..^3] + "BusStop -1 23 3";
+                rawData = rawData[..^3] + "BusStop 10 23 3";
             }
 
             // Save the previous default map and default position.
@@ -392,7 +392,7 @@ namespace LittleNPCs.Framework {
 
             // Pretending my start location is the bus stop location.
             DefaultMap = "BusStop";
-            DefaultPosition = new Vector2(0, 23) * 64;
+            DefaultPosition = new Vector2(10, 23) * 64;
 
             Dictionary<int, SchedulePathDescription> retval = null;
             try {
@@ -411,7 +411,7 @@ namespace LittleNPCs.Framework {
         protected override void prepareToDisembarkOnNewSchedulePath() {
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
                 var home = getHome();
-                ModEntry.monitor_.Log($"[{GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}", LogLevel.Info);
+                ModEntry.monitor_.VerboseLog($"[{GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}");
                 temporaryController = new PathFindController(this, home, new Point(home.warps[0].X, home.warps[0].Y), 2, true) {
                     NPCSchedule = true
                 };

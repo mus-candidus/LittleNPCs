@@ -32,7 +32,7 @@ namespace LittleNPCs.Framework.Patches {
             // This is normally only for married NPCs.
             if (littleNPC.followSchedule) {
                 if (__instance.location is FarmHouse) {
-                    warp = new Warp(warp.X, warp.Y, "BusStop", 0, 23, false);
+                    warp = new Warp(warp.X, warp.Y, "BusStop", 10, 23, false);
                 }
                 if (__instance.location is BusStop && warp.X <= 0) {
                     warp = new Warp(warp.X, warp.Y, littleNPC.getHome().Name, (littleNPC.getHome() as FarmHouse).getEntryLocation().X, (littleNPC.getHome() as FarmHouse).getEntryLocation().Y, false);
