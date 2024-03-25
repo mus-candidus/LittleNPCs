@@ -201,7 +201,7 @@ namespace LittleNPCs {
                 var littleNPC = item.Key;
                 var child = item.Value;
 
-                this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Warn);
+                this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Info);
                     
                 // Put hat on (part of the save game).
                 if (littleNPC.WrappedChildHat is not null) {
