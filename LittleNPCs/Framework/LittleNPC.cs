@@ -332,7 +332,7 @@ namespace LittleNPCs.Framework {
                 if (ModEntry.config_.DoChildrenHaveCurfew && !currentLocation.Equals(getHome())) {
                     // Send child home for curfew.
                     if(timeOfDay == ModEntry.config_.CurfewTime) {
-                        value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", 10, 23, 3, null, null);
+                        value = pathfindToNextScheduleLocation(null, currentLocation.Name, (int) Tile.X, (int) Tile.Y, "BusStop", 9, 23, 3, null, null);
                         queuedSchedulePaths.Clear();
                         queuedSchedulePaths.Add(value);
                     }
@@ -383,7 +383,7 @@ namespace LittleNPCs.Framework {
             // Scheduling code can use "bed" to refer to the usual last stop of an NPC.
             // For a LittleNPC, this is always the bus stop, so I can just do the replacement here.
             if (rawData.EndsWith("bed")) {
-                rawData = rawData[..^3] + "BusStop 10 23 3";
+                rawData = rawData[..^3] + "BusStop 9 23 3";
             }
 
             // Save the previous default map and default position.
