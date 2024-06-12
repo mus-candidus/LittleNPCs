@@ -369,17 +369,18 @@ namespace LittleNPCs {
 
             string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
 
-            if (e.NameWithoutLocale.StartsWith($"Characters/{prefix}")) {
+            //fixed issues with CP 2.1.0+ by ensuring loads to unlocalized assets by default
+            if (e.Name.IsEquivalentTo($"Characters/{littleNPC.Name}")) {
                 // Fallback assets are loaded with low prioriy.
                 e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
             }
 
-            if (e.NameWithoutLocale.StartsWith($"Portraits/{prefix}")) {
+            if (e.Name.IsEquivalentTo($"Portraits/{littleNPC.Name}")) {
                 // This uses part of the sprite texture as portrait but should be good enough as a fallback.
                 e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
             }
 
-            if (e.NameWithoutLocale.StartsWith($"Characters/Dialogue/{prefix}")) {
+            if (e.Name.IsEquivalentTo($"Characters/Dialogue/{littleNPC.Name}")) {
                 e.LoadFrom(() => dialogue, AssetLoadPriority.Low);
             }
         }
