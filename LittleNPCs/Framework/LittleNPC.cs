@@ -103,6 +103,9 @@ namespace LittleNPCs.Framework {
             // Set displayName.
             this.displayName = displayName;
 
+            // Breather looks odd for children.
+            Breather = false;
+
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Made child {child.Name} invisible.", LogLevel.Info);
