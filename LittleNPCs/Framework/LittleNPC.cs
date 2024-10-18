@@ -36,7 +36,7 @@ namespace LittleNPCs.Framework {
         private readonly NetRef<Hat> wrappedChildHat_ = new NetRef<Hat>();
 
         private readonly NetString transferDataJson_ = new NetString();
-        
+
         /// <summary>
         /// Wrapped child's hat, if any. Must be removed during the day.
         /// </summary>
@@ -64,6 +64,13 @@ namespace LittleNPCs.Framework {
         /// </summary>
         /// <value></value>
         public int ChildIndex { get; private set; }
+
+        /// <summary>
+        /// Determines whether it's time for a child to go to bed.
+        /// </summary>
+        private bool IsTimeForBed {
+            get => (ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime) || (!ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= 2130);
+        }
 
         public LittleNPC() {
         }
@@ -95,6 +102,9 @@ namespace LittleNPCs.Framework {
 
             // Set displayName.
             this.displayName = displayName;
+
+            // Breather looks odd for children.
+            Breather = false;
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
@@ -220,15 +230,16 @@ namespace LittleNPCs.Framework {
         public override void performTenMinuteUpdate(int timeOfDay, GameLocation l) {
             FarmHouse farmHouse = getHome() as FarmHouse;
             if (farmHouse?.characters.Contains(this) ?? false) {
-                ModConfig config = ModEntry.config_;
+                Point bedPoint = new Point((int) DefaultPosition.X / 64, (int) DefaultPosition.Y / 64);
+
                 // Send children to bed when inside home.
-                if (config.DoChildrenHaveCurfew && Game1.timeOfDay == config.CurfewTime) {
+                if (IsTimeForBed && TilePoint != bedPoint) {
                     IsWalkingInSquare = false;
                     Halt();
                     temporaryController = null;
 
                     // Child is at home, direct path to bed (DefaultPosition).
-                    Point bedPoint = new Point((int) DefaultPosition.X / 64, (int) DefaultPosition.Y / 64);
+                    // The original Child object might be hidden but reserves the bed nonetheless so we don't need to call ReserveForNPC() .
                     controller = new PathFindController(this, farmHouse, bedPoint, 2);
 
                     if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y)) {
@@ -240,10 +251,10 @@ namespace LittleNPCs.Framework {
                 // The NPCs get warped out of farm house before they reach their random destination points in the house
                 // and thus are doomed to walk around in the BusStop location endlessly without a chance to reach their destination!
                 else if (controller is null
-                         && config.DoChildrenWander
+                         && ModEntry.config_.DoChildrenWander
                          && (Schedule is null || !Schedule.ContainsKey(Game1.timeOfDay))
                          && Game1.timeOfDay % 100 == 0
-                         && Game1.timeOfDay < config.CurfewTime) {
+                         && !IsTimeForBed) {
                     if (!currentLocation.Equals(Utility.getHomeOfFarmer(Game1.player))) {
                         return;
                     }
@@ -263,42 +274,53 @@ namespace LittleNPCs.Framework {
             base.performTenMinuteUpdate(timeOfDay, l);
         }
 
-        public override void arriveAtFarmHouse (FarmHouse farmHouse) {
-            if (ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime) {
-                Point bedPoint = Utility.Vector2ToPoint(DefaultPosition / 64f);
+        /// <summary>
+        /// Prevent children from walking into the void.
+        /// </summary>
+        /// <param name="location"></param>
+        /// <returns></returns>
+        public override bool shouldCollideWithBuildingLayer(GameLocation location) {
+            if (Schedule == null || location is FarmHouse) {
+                return true;
+            }
 
+            return base.shouldCollideWithBuildingLayer(location);
+        }
+
+        public override void arriveAtFarmHouse(FarmHouse farmHouse) {
+            Point bedPoint = Utility.Vector2ToPoint(DefaultPosition / 64f);
+            if (Game1.newDay || Game1.timeOfDay <= 630 || TilePoint == bedPoint) {
+                return;
+            }
+
+            setTilePosition(farmHouse.getEntryLocation());
+            ignoreScheduleToday = true;
+            temporaryController = null;
+            // In order to make path finding work we must assign null first.
+            controller = null;
+
+            if (IsTimeForBed) {
                 // If farmer is not here move to bed instantly because path finding will be cancelled when the farmer enters the house.
                 // Note that we need PathFindController even in this case because setTilePosition(bedPoint) places the NPC next to bed.
-                if (Game1.player.currentLocation != farmHouse) {
+                if (!Game1.player.currentLocation.Equals(farmHouse)) {
                     setTilePosition(bedPoint);
                 }
                 else {
                     setTilePosition(farmHouse.getEntryLocation());
                 }
 
-                ignoreScheduleToday = true;
-                temporaryController = null;
-                // In order to make path finding work we must assign null first.
-                controller = null;
-
+                // Create a PathFindController to bed spot.
                 controller = new PathFindController(this, farmHouse, bedPoint, 2);
             }
             else {
-                setTilePosition(farmHouse.getEntryLocation());
-
-                ignoreScheduleToday = true;
-                temporaryController = null;
-                controller = null;
-
+                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
+            }
+            if (controller.pathToEndPoint is null) {
+                willDestroyObjectsUnderfoot = true;
                 controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
             }
 
-            if (controller.pathToEndPoint is null) {
-                willDestroyObjectsUnderfoot = true;
-                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 0);
-            }
-
-            if (Game1.currentLocation == farmHouse) {
+            if (Game1.currentLocation.Equals(farmHouse)) {
                 Game1.currentLocation.playSound("doorClose", null, null, StardewValley.Audio.SoundContext.NPC);
             }
         }
