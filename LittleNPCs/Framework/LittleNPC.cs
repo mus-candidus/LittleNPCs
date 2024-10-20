@@ -103,9 +103,6 @@ namespace LittleNPCs.Framework {
             // Set displayName.
             this.displayName = displayName;
 
-            // Breather looks odd for children.
-            Breather = false;
-
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Made child {child.Name} invisible.", LogLevel.Info);
@@ -161,6 +158,7 @@ namespace LittleNPCs.Framework {
             homeData.Tile = Utility.Vector2ToPoint(bedSpot / 64f);
             characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
             characterData.DisplayName = npc.displayName;
+            characterData.Breather = false;
 
             // Load schedule to put it into a NetRef.
             npc.getMasterScheduleRawData();
@@ -183,20 +181,32 @@ namespace LittleNPCs.Framework {
             var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
 
             if (!npcDispositions.TryGetValue(Name, out _)) {
+                // Assign new character data to trigger NPC creation. Breather is a bit special: It's part of character data
+                // AND it must be set for the NPC. SDV does that internally when a corresponding Data/Characters entry exists.
+                // That's not the case here so we must do it explicitly.
                 npcDispositions[Name] = characterData;
+                Breather = characterData.Breather;
 
-                // Subset of character data for logging purposes. Although there's no dispositions string in SDV 1.6 anymore
-                // we create something similar because a serialied CharacterData object seems too heavy for just logging.
-                string loggedCharacterData
-                    = string.Join("/",
-                                  characterData.Age,
-                                  characterData.Gender,
-                                  characterData.HomeRegion,
-                                  $"{characterData.BirthSeason} {characterData.BirthDay}",
-                                  $"{characterData.Home.First().Location} {characterData.Home.First().Tile}",
-                                  characterData.DisplayName);
+                var loggedCharacterData = CharacterDataToString(characterData);
 
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
+            }
+            else {
+                // Data was loaded from a corresponding Data/Characters section. Assign only the fields that must be controlled by the mod,
+                // everything else can be configured by the content pack.
+                npcDispositions[Name].Age = characterData.Age;
+                npcDispositions[Name].Gender = characterData.Gender;
+                npcDispositions[Name].CanBeRomanced = characterData.CanBeRomanced;
+                npcDispositions[Name].HomeRegion = characterData.HomeRegion;
+                npcDispositions[Name].BirthSeason = characterData.BirthSeason;
+                npcDispositions[Name].BirthDay = characterData.BirthDay;
+                npcDispositions[Name].CanReceiveGifts = characterData.CanReceiveGifts;
+                npcDispositions[Name].Home = characterData.Home;
+                npcDispositions[Name].DisplayName = characterData.DisplayName;
+
+                var loggedCharacterData = CharacterDataToString(characterData);
+
+                ModEntry.monitor_.Log($"[{GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
 
             // Setting schedules is not necessary on multiplayer clients, all schedules run on the host.
@@ -224,6 +234,24 @@ namespace LittleNPCs.Framework {
 
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
             }
+        }
+
+        /// <summary>
+        /// Subset of character data for logging purposes. Although there's no dispositions string in SDV 1.6 anymore
+        /// we create something similar because a serialized CharacterData object seems too heavy for just logging.
+        /// </summary>
+        /// <param name="characterData"></param>
+        /// <returns></returns>
+        private static string CharacterDataToString(CharacterData characterData) {
+            string loggedCharacterData
+                = string.Join("/",
+                    characterData.Age,
+                    characterData.Gender,
+                    characterData.HomeRegion,
+                    $"{characterData.BirthSeason} {characterData.BirthDay}",
+                    $"{characterData.Home.First().Location} {characterData.Home.First().Tile}",
+                    characterData.DisplayName);
+            return loggedCharacterData;
         }
 
         /// <inheritdoc/>
