@@ -178,7 +178,7 @@ namespace LittleNPCs.Framework {
             TransferData transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
 
             CharacterData characterData = transferData.CharacterData;
-            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
+            var npcDispositions = Game1.characterData;
 
             if (!npcDispositions.TryGetValue(Name, out _)) {
                 // Assign new character data to trigger NPC creation. Breather is a bit special: It's part of character data

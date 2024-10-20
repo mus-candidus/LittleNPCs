@@ -217,9 +217,6 @@ namespace LittleNPCs {
                 // Set child visible before saving.
                 child.IsInvisible = false;
 
-                // Remove NPCDispositions to prevent auto-load on next day.
-                npcDispositions.Remove(littleNPC.Name);
-
                 // Remove from game.
                 bool success = false;
                 Utility.ForEachLocation(location => {
