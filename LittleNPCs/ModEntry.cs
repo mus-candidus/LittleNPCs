@@ -365,20 +365,28 @@ namespace LittleNPCs {
             };
 
             string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
-
-            //fixed issues with CP 2.1.0+ by ensuring loads to unlocalized assets by default
-            if (e.Name.IsEquivalentTo($"Characters/{littleNPC.Name}")) {
-                // Fallback assets are loaded with low prioriy.
-                e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
+           
+            if (e.Name.StartsWith($"Characters/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
+                // Fallback assets are loaded with low priority.
+                e.LoadFrom(() => {
+                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+                    return Game1.content.Load<Texture2D>(spriteTextureName);
+                }, AssetLoadPriority.Low);
             }
 
-            if (e.Name.IsEquivalentTo($"Portraits/{littleNPC.Name}")) {
+            if (e.Name.StartsWith($"Portraits/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 // This uses part of the sprite texture as portrait but should be good enough as a fallback.
-                e.LoadFrom(() => Game1.content.Load<Texture2D>(spriteTextureName), AssetLoadPriority.Low);
+                e.LoadFrom(() => {
+                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+                    return Game1.content.Load<Texture2D>(spriteTextureName);
+                }, AssetLoadPriority.Low);
             }
 
-            if (e.Name.IsEquivalentTo($"Characters/Dialogue/{littleNPC.Name}")) {
-                e.LoadFrom(() => dialogue, AssetLoadPriority.Low);
+            if (e.Name.StartsWith($"Characters/Dialogue/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
+                e.LoadFrom(() => {
+                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+                    return dialogue;
+                }, AssetLoadPriority.Low);
             }
         }
 
@@ -400,6 +408,16 @@ namespace LittleNPCs {
         internal static bool IsValidLittleNPCIndex(int childIndex) {
             // Only the first two children can be converted.
             return (childIndex == 0 || childIndex == 1);
+        }
+
+        /// <summary>
+        /// Checks if a given name belongs to a non-localized asset.
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        private static bool IsNonLocalizedAssetName(IAssetName assetName) {
+            // We have to check for locale code and international suffix.
+            return string.IsNullOrEmpty(assetName.LocaleCode) && !assetName.Name.EndsWith("_international");
         }
     }
 }

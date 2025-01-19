@@ -505,7 +505,7 @@ namespace LittleNPCs.Framework {
             return birthday;
         }
 
-        private static string GetHostTag()
+        internal static string GetHostTag()
         {
             return Game1.IsMasterGame ? "Host" : "Client";
         }
