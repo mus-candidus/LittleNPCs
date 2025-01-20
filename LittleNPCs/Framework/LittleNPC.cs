@@ -21,7 +21,39 @@ using Newtonsoft.Json;
 
 namespace LittleNPCs.Framework {
     public class LittleNPC : NPC {
-        private record class TransferData(CharacterData CharacterData, Dictionary<string, string> MasterScheduleData) {
+        /// <summary>
+        /// This class is used to transfer an image as JSON.
+        /// </summary>
+        /// <param name="Width">Texture width</param>
+        /// <param name="Height">Texture height</param>
+        /// <param name="Data">Texture data. Using <code>uint</code> instead of <code>Color</code> to get more compact JSON.</param>
+        public record class TransferImage(int Width, int Height, uint[] Data) {
+            /// <summary>
+            /// Factory method instead of constructor.
+            /// This class already has a primary constructor and defining another one would prevent JSON serialization.
+            /// </summary>
+            /// <param name="texture"></param>
+            /// <returns></returns>
+            public static TransferImage FromTexture(Texture2D texture) {
+                var result = new TransferImage(texture.Width, texture.Height,new uint[texture.Width * texture.Height]);
+                texture.GetData(result.Data);
+
+                return result;
+            }
+
+            public Texture2D ToTexture(GraphicsDevice graphicsDevice) {
+                var texture = new Texture2D(graphicsDevice, Width, Height);
+                texture.SetData(Data);
+
+                return texture;
+            }
+        }
+
+        private record class TransferData(CharacterData CharacterData,
+                                          Dictionary<string, string> MasterScheduleData,
+                                          TransferImage Sprite,
+                                          TransferImage Portrait,
+                                          Dictionary<string, string> Dialogue) {
         }
 
         private static Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
@@ -164,7 +196,11 @@ namespace LittleNPCs.Framework {
             npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
-            TransferData transferData = new TransferData(characterData, npc._masterScheduleData);
+            TransferData transferData = new TransferData(characterData,
+                                                         npc._masterScheduleData,
+                                                         TransferImage.FromTexture(sprite.spriteTexture),
+                                                         TransferImage.FromTexture(portrait),
+                                                         npc.Dialogue);
 
             string transferDataJson = JsonConvert.SerializeObject(transferData);
 
@@ -208,6 +244,10 @@ namespace LittleNPCs.Framework {
 
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
+
+            ModEntry.CachedAssets[$"Characters/{Name}"] = transferData.Sprite;
+            ModEntry.CachedAssets[$"Portraits/{Name}"] = transferData.Portrait;
+            ModEntry.CachedAssets[$"Characters/Dialogue/{Name}"] = transferData.Dialogue;
 
             // Setting schedules is not necessary on multiplayer clients, all schedules run on the host.
             if (!Game1.IsMasterGame) {

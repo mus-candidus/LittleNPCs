@@ -31,6 +31,8 @@ namespace LittleNPCs {
         // We have to keep track of LittleNPCs vor various reasons.
         public static Dictionary<LittleNPC, Child> TrackedLittleNPCs { get; } = new Dictionary<LittleNPC, Child>();
 
+        public static Dictionary<string, object> CachedAssets { get; } = new Dictionary<string, object>();
+
         public override void Entry(IModHelper helper) {
             ModEntry.helper_ = helper;
             ModEntry.monitor_ = this.Monitor;
@@ -337,6 +339,11 @@ namespace LittleNPCs {
         /// <param name="e"></param>
         /// <param name="index"></param>
         private void ProvideFallbackAssets(AssetRequestedEventArgs e, int index) {
+            // Provide assets for LittleNPCs only.
+            if (!e.Name.Name.Contains("LittleNPC")) {
+                return;
+            }
+
             var littleNPC = new LittleNPCInfo(index, this.Monitor);
 
             // We also use the sprite texture as portrait but should be good enough as a fallback.
@@ -344,12 +351,7 @@ namespace LittleNPCs {
                                                      (littleNPC.Gender == Gender.Male) ? "" : "_girl");
 
             // Fallback dialogue.
-            string message = Game1.IsMultiplayer
-                           ? string.Concat("Hi @! Don't worry that I'm still a toddler, ",
-                                           "multiplayer support is not easy to implement.",
-                                           "#$e#",
-                                           "This is work in progress.")
-                           : string.Concat("Hi dad! Please install a content pack for me.",
+            string message = string.Concat("Hi dad! Please install a content pack for me.",
                                            "^Hi mom! Please install a content pack for me.",
                                            "#$e#",
                                            "Look for StardewValley Mod 15152 on nexusmods.com for details.");
@@ -369,7 +371,14 @@ namespace LittleNPCs {
             if (e.Name.StartsWith($"Characters/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 // Fallback assets are loaded with low priority.
                 e.LoadFrom(() => {
+                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
+                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+
+                        return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
+                    }
+
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+
                     return Game1.content.Load<Texture2D>(spriteTextureName);
                 }, AssetLoadPriority.Low);
             }
@@ -377,14 +386,28 @@ namespace LittleNPCs {
             if (e.Name.StartsWith($"Portraits/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 // This uses part of the sprite texture as portrait but should be good enough as a fallback.
                 e.LoadFrom(() => {
+                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
+                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+
+                        return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
+                    }
+
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+
                     return Game1.content.Load<Texture2D>(spriteTextureName);
                 }, AssetLoadPriority.Low);
             }
 
             if (e.Name.StartsWith($"Characters/Dialogue/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 e.LoadFrom(() => {
+                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
+                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+
+                        return (Dictionary<string, string>) asset;
+                    }
+
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+
                     return dialogue;
                 }, AssetLoadPriority.Low);
             }
