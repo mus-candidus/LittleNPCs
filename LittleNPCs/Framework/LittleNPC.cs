@@ -113,7 +113,6 @@ namespace LittleNPCs.Framework {
                             string defaultMap,
                             int facingDir,
                             string name,
-                            string displayName,
                             Texture2D portrait)
         : base(sprite, position, defaultMap, facingDir, name, portrait, false) {
             // Take hat off because it stays visible even when making a child invisible.
@@ -128,12 +127,6 @@ namespace LittleNPCs.Framework {
             var birthday = GetBirthday(child);
             Birthday_Day = birthday.Day;
             Birthday_Season = Utility.getSeasonKey(birthday.Season);
-
-            // Set gender.
-            Gender = child.Gender;
-
-            // Set displayName.
-            this.displayName = displayName;
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
@@ -162,8 +155,13 @@ namespace LittleNPCs.Framework {
                                     farmHouse.NameOrUniqueName,
                                     child.FacingDirection,
                                     assetName,
-                                    child.Name,
                                     portrait);
+
+            // Set gender. Virtual property, can't be set in the constructor.
+            npc.Gender = child.Gender;
+
+            // Set displayName. Virtual property, can't be set in the constructor.
+            npc.displayName = child.Name;
 
             // Generate and set NPCDispositions.
             // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
