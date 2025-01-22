@@ -155,10 +155,11 @@ namespace LittleNPCs.Framework {
             AnimatedSprite sprite = new AnimatedSprite($"Characters/{assetName}", 0, 16, 32);
             Texture2D portrait = Game1.content.Load<Texture2D>($"Portraits/{assetName}");
 
+            // ATTENTION: DefaultMap of child is just FarmHouse which is wrong for farmhands.
             var npc = new LittleNPC(child,
                                     sprite,
                                     bedSpot,
-                                    child.DefaultMap,
+                                    farmHouse.NameOrUniqueName,
                                     child.FacingDirection,
                                     assetName,
                                     child.Name,
