@@ -37,7 +37,7 @@ namespace LittleNPCs.Framework {
                     Gender = littleNPC.Gender;
                     Birthday = littleNPC.GetBirthday();
                     LoadedFrom = LoadState.LittleNPC;
-                    monitor_.VerboseLog($"GetLittleNPC({childIndex}) returns {Name}");
+                    monitor_.VerboseLog($"GetLittleNPC({childIndex}) returns {this}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -49,7 +49,7 @@ namespace LittleNPCs.Framework {
                         Gender = child.Gender;
                         Birthday = LittleNPC.GetBirthday(child);
                         LoadedFrom = LoadState.Child;
-                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
+                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {this}");
                     }
                     else {
                         monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
