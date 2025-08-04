@@ -197,7 +197,7 @@ namespace LittleNPCs {
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
-            var npcDispositions = Game1.content.Load<Dictionary<string, CharacterData>>("Data/Characters");
+            var npcDispositions = Game1.characterData;
 
             // Only convert items in our tracking list.
             foreach (var item in TrackedLittleNPCs) {
@@ -214,6 +214,8 @@ namespace LittleNPCs {
                 // Copy friendship data.
                 if (Game1.player.friendshipData.TryGetValue(littleNPC.Name, out var friendship)) {
                     Game1.player.friendshipData[child.Name] = friendship;
+                    // Remove friendship data to avoid multiple social page entries.
+                    Game1.player.friendshipData.Remove(littleNPC.Name);
                 }
 
                 // Set child visible before saving.
@@ -222,14 +224,14 @@ namespace LittleNPCs {
                 // Remove from game.
                 bool success = false;
                 Utility.ForEachLocation(location => {
-                    for (int i = 0; i < location.characters.Count; ++i) {
-                        if (location.characters[i].Name == littleNPC.Name) {
-                            this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
-                            location.characters.RemoveAt(i);
-                            success = true;
-                        
-                            break;
-                        }
+                    var guidsToRemove = (from c in location.characters
+                                         where c.Name == littleNPC.Name
+                                         select location.characters.GuidOf(c)).ToList();
+
+                    foreach (var guid in guidsToRemove) {
+                        location.characters.Remove(guid);
+                        this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
+                        success = true;
                     }
                 
                     return true;
