@@ -9,6 +9,7 @@ using StardewValley.Characters;
 using StardewValley.Pathfinding;
 using StardewValley.Menus;
 using System.Linq;
+using LittleNPCs.Framework.Patches;
 
 
 namespace LittleNPCs.Framework {
@@ -25,6 +26,11 @@ namespace LittleNPCs.Framework {
             harmony.Patch(
                 original: AccessTools.Method(typeof(SocialPage), nameof(SocialPage.FindSocialCharacters)),
                 postfix:  new HarmonyMethod(typeof(Patches.SPFindSocialCharactersPatch), nameof(Patches.SPFindSocialCharactersPatch.Postfix))
+            );
+            // GameLocation.cleanupBeforeSave patch (postfix).
+            harmony.Patch(
+                original:AccessTools.Method(typeof(GameLocation), nameof(GameLocation.cleanupBeforeSave)),
+                postfix:  new HarmonyMethod(typeof(GLCCleanupBeforeSave), nameof(GLCCleanupBeforeSave.Postfix))
             );
         }
     }
