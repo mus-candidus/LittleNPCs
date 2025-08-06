@@ -244,6 +244,13 @@ namespace LittleNPCs.Framework {
                 ModEntry.monitor_.Log($"[{GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
 
+            // Attempt to log and fix an issue when certain fields of NPC are not set.
+            if (Birthday_Day != characterData.BirthDay || Birthday_Season != Utility.getSeasonKey(characterData.BirthSeason.Value)) {
+                ModEntry.monitor_.Log($"[{GetHostTag()}] Correcting birthday: old {Birthday_Season} {Birthday_Day}, new {characterData.BirthSeason} {characterData.BirthDay}", LogLevel.Warn);
+                Birthday_Day = characterData.BirthDay;
+                Birthday_Season = Utility.getSeasonKey(characterData.BirthSeason.Value);
+            }
+
             ModEntry.CachedAssets[$"Characters/{Name}"] = transferData.Sprite;
             ModEntry.CachedAssets[$"Portraits/{Name}"] = transferData.Portrait;
             ModEntry.CachedAssets[$"Characters/Dialogue/{Name}"] = transferData.Dialogue;
