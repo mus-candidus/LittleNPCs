@@ -139,7 +139,7 @@ namespace LittleNPCs.Framework {
             Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(child.GetChildIndex())) * 64f;
             // (0, 0) means there's noe bed available and the child will stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
-                bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1)) * 64f;
+                bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1, 200)) * 64f;
                 monitor.Log($"[{GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
