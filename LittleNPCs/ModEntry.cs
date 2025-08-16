@@ -379,6 +379,19 @@ namespace LittleNPCs {
                         return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
                     }
 
+                    if (e.Name.Name.Contains("_Beach") && !CachedAssets.TryGetValue(e.Name.Name, out _)) {
+                        // Use standard asset for beach.
+                        string beachTag = "_Beach";
+                        int beachTagStart = e.Name.Name.IndexOf(beachTag, StringComparison.Ordinal);
+                        string assetName = e.Name.Name.Remove(beachTagStart, beachTag.Length);
+                        if (CachedAssets.TryGetValue(assetName, out asset)) {
+                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}",
+                                LogLevel.Info);
+
+                            return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
+                        }
+                    }
+
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
 
                     return Game1.content.Load<Texture2D>(spriteTextureName);
@@ -392,6 +405,19 @@ namespace LittleNPCs {
                         ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
 
                         return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
+                    }
+
+                    if (e.Name.Name.Contains("_Beach") && !CachedAssets.TryGetValue(e.Name.Name, out _)) {
+                        // Use standard asset for beach.
+                        string beachTag = "_Beach";
+                        int beachTagStart = e.Name.Name.IndexOf(beachTag, StringComparison.Ordinal);
+                        string assetName = e.Name.Name.Remove(beachTagStart, beachTag.Length);
+                        if (CachedAssets.TryGetValue(assetName, out asset)) {
+                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}",
+                                LogLevel.Info);
+
+                            return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
+                        }
                     }
 
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
