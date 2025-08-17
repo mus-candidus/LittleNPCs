@@ -124,7 +124,7 @@ namespace LittleNPCs.Framework {
             ChildIndex = child.GetChildIndex();
 
             // Set birthday.
-            var birthday = GetBirthday(child);
+            var birthday = GetBirthday(child, false);
             Birthday_Day = birthday.Day;
             Birthday_Season = Utility.getSeasonKey(birthday.Season);
 
@@ -536,12 +536,15 @@ namespace LittleNPCs.Framework {
             return new SDate(Birthday_Day, Birthday_Season);
         }
 
-        public static SDate GetBirthday(Child child) {
-            SDate birthday;
+        public static SDate GetBirthday(Child child, bool loadFromSave) {
+            SDate today = (loadFromSave && SaveGame.loaded is not null)
+                        ? new SDate(SaveGame.loaded.dayOfMonth, SaveGame.loaded.currentSeason, SaveGame.loaded.year)
+                        : SDate.Now();
 
+            SDate birthday;
             try {
                 // Subtract age of child in days from current date.
-                birthday = SDate.Now().AddDays(-child.daysOld.Value);
+                birthday = today.AddDays(-child.daysOld.Value);
             }
             catch (ArithmeticException) {
                 // Fallback.

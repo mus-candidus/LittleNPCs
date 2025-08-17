@@ -47,7 +47,7 @@ namespace LittleNPCs.Framework {
                         Name = CreateInternalAssetName(childIndex, child.Name);
                         DisplayName = child.Name;
                         Gender = child.Gender;
-                        Birthday = LittleNPC.GetBirthday(child);
+                        Birthday = LittleNPC.GetBirthday(child, false);
                         LoadedFrom = LoadState.Child;
                         monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {this}");
                     }
@@ -64,7 +64,7 @@ namespace LittleNPCs.Framework {
                     Name = CreateInternalAssetName(childIndex, child.Name);
                     DisplayName = child.Name;
                     Gender = child.Gender;
-                    Birthday = LittleNPC.GetBirthday(child);
+                    Birthday = LittleNPC.GetBirthday(child, true);
                     LoadedFrom = LoadState.SaveGame;
                     monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
                 }
