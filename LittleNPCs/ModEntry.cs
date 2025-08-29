@@ -370,7 +370,33 @@ namespace LittleNPCs {
 
             string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
 
-            if (e.Name.StartsWith($"Characters/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
+            LoadSpriteSheet(e, $"Characters/{prefix}", spriteTextureName);
+            LoadSpriteSheet(e, $"Portraits/{prefix}", spriteTextureName);
+
+            if (e.Name.StartsWith($"Characters/Dialogue/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
+                e.LoadFrom(() => {
+                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
+                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+
+                        return (Dictionary<string, string>) asset;
+                    }
+
+                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+
+                    return dialogue;
+                }, AssetLoadPriority.Low);
+            }
+        }
+
+        /// <summary>
+        /// Loads a cached character resp. portrait sheet or provides a fallback.
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="assetNamePrefix"></param>
+        /// <param name="spriteTextureName"></param>
+        /// <returns></returns>
+        private void LoadSpriteSheet(AssetRequestedEventArgs e, string assetNamePrefix, string spriteTextureName) {
+            if (e.Name.StartsWith(assetNamePrefix) && IsNonLocalizedAssetName(e.Name)) {
                 // Fallback assets are loaded with low priority.
                 e.LoadFrom(() => {
                     if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
@@ -385,8 +411,7 @@ namespace LittleNPCs {
                         int beachTagStart = e.Name.Name.IndexOf(beachTag, StringComparison.Ordinal);
                         string assetName = e.Name.Name.Remove(beachTagStart, beachTag.Length);
                         if (CachedAssets.TryGetValue(assetName, out asset)) {
-                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}",
-                                LogLevel.Info);
+                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
 
                             return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
                         }
@@ -394,49 +419,8 @@ namespace LittleNPCs {
 
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
 
+                    // If a portrait is requested we use part of the sprite texture but that should be good enough as a fallback.
                     return Game1.content.Load<Texture2D>(spriteTextureName);
-                }, AssetLoadPriority.Low);
-            }
-
-            if (e.Name.StartsWith($"Portraits/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
-                // This uses part of the sprite texture as portrait but should be good enough as a fallback.
-                e.LoadFrom(() => {
-                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
-                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
-
-                        return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
-                    }
-
-                    if (e.Name.Name.Contains("_Beach") && !CachedAssets.TryGetValue(e.Name.Name, out _)) {
-                        // Use standard asset for beach.
-                        string beachTag = "_Beach";
-                        int beachTagStart = e.Name.Name.IndexOf(beachTag, StringComparison.Ordinal);
-                        string assetName = e.Name.Name.Remove(beachTagStart, beachTag.Length);
-                        if (CachedAssets.TryGetValue(assetName, out asset)) {
-                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}",
-                                LogLevel.Info);
-
-                            return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
-                        }
-                    }
-
-                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
-
-                    return Game1.content.Load<Texture2D>(spriteTextureName);
-                }, AssetLoadPriority.Low);
-            }
-
-            if (e.Name.StartsWith($"Characters/Dialogue/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
-                e.LoadFrom(() => {
-                    if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
-                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
-
-                        return (Dictionary<string, string>) asset;
-                    }
-
-                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
-
-                    return dialogue;
                 }, AssetLoadPriority.Low);
             }
         }

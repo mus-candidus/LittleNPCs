@@ -28,6 +28,7 @@ namespace LittleNPCs.Framework {
 
         public LittleNPCInfo(int childIndex, IMonitor monitor) {
             monitor_ = monitor;
+
             if (Context.IsWorldReady) {
                 var littleNPC = ModEntry.GetLittleNPC(childIndex);
                 if (littleNPC is not null) {
@@ -41,36 +42,28 @@ namespace LittleNPCs.Framework {
                 }
                 else {
                     // No LittleNPC, try to get Child object.
-                    var children = GetChildrenFromFarmHouse(false, out FarmHouse farmHouse);
-                    Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
-                    if (child is not null) {
-                        Name = CreateInternalAssetName(childIndex, child.Name);
-                        DisplayName = child.Name;
-                        Gender = child.Gender;
-                        Birthday = LittleNPC.GetBirthday(child, false);
-                        LoadedFrom = LoadState.Child;
-                        monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {this}");
-                    }
-                    else {
-                        monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
-                    }
+                    AssignFromChild(this, false, childIndex);
                 }
             }
             else {
                 // World not ready, load from save.
-                var children = GetChildrenFromFarmHouse(true, out FarmHouse farmHouse);
-                Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
-                if (child is not null) {
-                    Name = CreateInternalAssetName(childIndex, child.Name);
-                    DisplayName = child.Name;
-                    Gender = child.Gender;
-                    Birthday = LittleNPC.GetBirthday(child, true);
-                    LoadedFrom = LoadState.SaveGame;
-                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {this}");
-                }
-                else {
-                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
-                }
+                AssignFromChild(this, true, childIndex);
+            }
+        }
+
+        private static void AssignFromChild(LittleNPCInfo info, bool loadFromSave, int childIndex) {
+            var children = GetChildrenFromFarmHouse(loadFromSave, out FarmHouse farmHouse);
+            Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
+            if (child is not null) {
+                info.Name = CreateInternalAssetName(childIndex, child.Name);
+                info.DisplayName = child.Name;
+                info.Gender = child.Gender;
+                info.Birthday = LittleNPC.GetBirthday(child, loadFromSave);
+                info.LoadedFrom = LoadState.Child;
+                info.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
+            }
+            else {
+                info.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
             }
         }
 
