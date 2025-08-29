@@ -73,118 +73,36 @@ namespace LittleNPCs.Framework {
             public TokenImplementation(ModEntry modEntry) {
                 var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
 
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCName",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].Name.ToTokenReturnValue(),
-                        false
-                    )
-                );
+                List<(int childIndex, string tokenName, Func<LittleNPCInfo, string> valueConverter)> tokens = new() {
+                    (0, "FirstLittleNPCName", npc => npc.Name),
+                    (0, "FirstLittleNPCDisplayName", npc => npc.DisplayName),
+                    (0, "FirstLittleNPCGender", npc => npc.Gender.ToString().ToLower()),
+                    (0, "FirstLittleNPCBirthSeason", npc => npc.Birthday.Season.ToString()),
+                    (0, "FirstLittleNPCBirthDay", npc => npc.Birthday.Day.ToString()),
+                    (0, "FirstLittleNPCAge", npc => (SDate.Now().Year - npc.Birthday.Year).ToString()),
+                    (1, "SecondLittleNPCName", npc => npc.Name),
+                    (1, "SecondLittleNPCDisplayName", npc => npc.DisplayName),
+                    (1, "SecondLittleNPCGender", npc => npc.Gender.ToString().ToLower()),
+                    (1, "SecondLittleNPCBirthSeason", npc => npc.Birthday.Season.ToString()),
+                    (1, "SecondLittleNPCBirthDay", npc => npc.Birthday.Day.ToString()),
+                    (1, "SecondLittleNPCAge", npc => (SDate.Now().Year - npc.Birthday.Year).ToString())
+                };
 
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCDisplayName",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].DisplayName.ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCGender",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].Gender.ToString().ToLower().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCBirthSeason",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].Birthday.Season.ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCBirthDay",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[0].Birthday.Day.ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCAge",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
-                        (unused) => (SDate.Now().Year - cachedLittleNPCs_[0].Birthday.Year).ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCName",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].Name.ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCDisplayName",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].DisplayName.ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCGender",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].Gender.ToString().ToLower().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCBirthSeason",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].Birthday.Season.ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCBirthDay",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => cachedLittleNPCs_[1].Birthday.Day.ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
-
-                api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCAge",
-                    new TokenCore(
-                        () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
-                        (unused) => (SDate.Now().Year - cachedLittleNPCs_[1].Birthday.Year).ToString().ToTokenReturnValue(),
-                        false
-                    )
-                );
+                foreach (var token in tokens) {
+                    api.RegisterToken(modEntry.ModManifest, token.tokenName,
+                        new TokenCore(
+                            () => cachedLittleNPCs_[token.childIndex] is not null && cachedLittleNPCs_[token.childIndex].LoadedFrom != LittleNPCInfo.LoadState.None,
+                            () => UpdateLittleNPC(token.childIndex, modEntry.Monitor),
+                            (unused) => token.valueConverter(cachedLittleNPCs_[token.childIndex]).ToTokenReturnValue(),
+                            false
+                        )
+                    );
+                }
 
                 api.RegisterToken(modEntry.ModManifest, "FirstLittleNPC",
                     new TokenCore(
                         () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateFirstLittleNPC(modEntry.Monitor),
+                        () => UpdateLittleNPC(0, modEntry.Monitor),
                         (input) => {
                             return (input switch {
                                 "Name"        => cachedLittleNPCs_[0].Name,
@@ -203,7 +121,7 @@ namespace LittleNPCs.Framework {
                 api.RegisterToken(modEntry.ModManifest, "SecondLittleNPC",
                     new TokenCore(
                         () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
-                        () => UpdateSecondLittleNPC(modEntry.Monitor),
+                        () => UpdateLittleNPC(1, modEntry.Monitor),
                         (input) => {
                             return (input switch {
                                 "Name"        => cachedLittleNPCs_[1].Name,
@@ -220,31 +138,21 @@ namespace LittleNPCs.Framework {
                 );
             }
 
-            private bool UpdateFirstLittleNPC(IMonitor monitor) {
-                var littleNPC = new LittleNPCInfo(0, monitor);
-                if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[0])) {
-                    cachedLittleNPCs_[0] = littleNPC;
+            private bool UpdateLittleNPC(int childIndex, IMonitor monitor) {
+                var littleNPC = new LittleNPCInfo(childIndex, monitor);
+                if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
+                    cachedLittleNPCs_[childIndex] = littleNPC;
 
-                    monitor.Log($"[{LittleNPC.GetHostTag()}] FirstLittleNPC updated: {cachedLittleNPCs_[0]}", LogLevel.Info);
-
-                    return true;
-                }
-
-                return false;
-            }
-
-            private bool UpdateSecondLittleNPC(IMonitor monitor) {
-                var littleNPC = new LittleNPCInfo(1, monitor);
-                if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[1])) {
-                    cachedLittleNPCs_[1] = littleNPC;
-
-                    monitor.Log($"[{LittleNPC.GetHostTag()}] FirstLittleNPC updated: {cachedLittleNPCs_[1]}", LogLevel.Info);
+                    string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+                    monitor.Log($"[{LittleNPC.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
 
                     return true;
                 }
 
                 return false;
             }
+
+
         }
 
         public static void Register(ModEntry modEntry) {
