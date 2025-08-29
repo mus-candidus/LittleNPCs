@@ -37,7 +37,7 @@ namespace LittleNPCs.Framework {
                     Gender = littleNPC.Gender;
                     Birthday = littleNPC.GetBirthday();
                     LoadedFrom = LoadState.LittleNPC;
-                    monitor_.VerboseLog($"GetLittleNPC({childIndex}) returns {this}");
+                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -49,10 +49,10 @@ namespace LittleNPCs.Framework {
                         Gender = child.Gender;
                         Birthday = LittleNPC.GetBirthday(child, false);
                         LoadedFrom = LoadState.Child;
-                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {this}");
+                        monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {this}");
                     }
                     else {
-                        monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
+                        monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
                     }
                 }
             }
@@ -66,10 +66,10 @@ namespace LittleNPCs.Framework {
                     Gender = child.Gender;
                     Birthday = LittleNPC.GetBirthday(child, true);
                     LoadedFrom = LoadState.SaveGame;
-                    monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns {Name}");
+                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {this}");
                 }
                 else {
-                    monitor_.VerboseLog($"Query for convertible child with index {childIndex} returns null");
+                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
                 }
             }
         }
@@ -77,7 +77,7 @@ namespace LittleNPCs.Framework {
         private static IEnumerable<Child> GetChildrenFromFarmHouse(bool loadFromSave, out FarmHouse farmHouse) {
             farmHouse = loadFromSave ? SaveGame.loaded?.locations.OfType<FarmHouse>().FirstOrDefault(l => l.Name == "FarmHouse")
                                      : Utility.getHomeOfFarmer(Game1.player);
-            
+
             return farmHouse is not null ? farmHouse.getChildren()
                                          : Enumerable.Empty<Child>();
         }
@@ -85,10 +85,10 @@ namespace LittleNPCs.Framework {
         public static string CreateInternalAssetName(int childIndex, string childName) {
             // Internal asset name to create a LittleNPC from needs a prefix.
             string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
-            
-            // Remove spaces. This could to equal names but there's still the prefix to distinguish them. 
+
+            // Remove spaces. This could to equal names but there's still the prefix to distinguish them.
             string sanitizedChildName = childName.Replace(' ', '_');
-            
+
             return $"{prefix}{sanitizedChildName}{Game1.player.UniqueMultiplayerID}";
         }
     }

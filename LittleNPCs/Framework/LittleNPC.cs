@@ -169,7 +169,7 @@ namespace LittleNPCs.Framework {
             // We must control NPC creation, however, so we generate and set dispositions here.
             // Fortunately all important data is provided by the save file.
             // Note that the content pack must not provide NPCDispositions.
-            // Example: 
+            // Example:
             // child/neutral/outgoing/neutral/male/non-datable/null/Town/summer 23//Farmhouse 23 5/Eric
             // child/neutral/outgoing/neutral/female/non-datable/null/Town/summer 24//Farmhouse 27 5/Sandra
             var characterData = new CharacterData();

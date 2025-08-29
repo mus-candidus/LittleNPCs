@@ -53,7 +53,7 @@ namespace LittleNPCs {
             }
 
             foreach (var pack in littleNPCPacks) {
-                this.Monitor.Log($"Found content pack for LittleNPCs: {pack}", LogLevel.Info);
+                this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Found content pack for LittleNPCs: {pack}", LogLevel.Info);
             }
 
             // Read config.
@@ -72,33 +72,33 @@ namespace LittleNPCs {
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
             ContentPatcherTokens.Register(this);
-            
+
             // GenericModConfigMenu support.
             var configMenu = this.Helper.ModRegistry.GetApi<GenericModConfigMenu.IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null) {
                 return;
             }
-            
+
             configMenu.Register(this.ModManifest,
                                 () => config_ = new ModConfig(),
                                 () => this.Helper.WriteConfig(config_));
-            
+
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.AgeWhenKidsAreModified,
                                        (val) => config_.AgeWhenKidsAreModified = val,
                                        () => "Age when kids are modified",
                                        min: 1);
-            
+
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenWander,
                                      (val) => config_.DoChildrenWander = val,
                                      () => "Do children wander");
-            
+
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenHaveCurfew,
                                      (val) => config_.DoChildrenHaveCurfew = val,
                                      () => "Do children have curfew");
-            
+
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.CurfewTime,
                                        (val) => config_.CurfewTime = val,
@@ -106,7 +106,7 @@ namespace LittleNPCs {
                                        min: 1200,
                                        max: 2400,
                                        interval: 100);
-            
+
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenVisitVolcanoIsland,
                                      (val) => config_.DoChildrenVisitVolcanoIsland = val,
@@ -161,7 +161,7 @@ namespace LittleNPCs {
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
 
             var npcs = farmHouse.characters;
-            
+
             var childrenToConvert = new List<Child>();
             foreach (var child in convertibleChildren) {
                 // Convert only the first two children.
@@ -169,7 +169,7 @@ namespace LittleNPCs {
                     childrenToConvert.Add(child);
                 }
                 else {
-                    this.Monitor.Log($"Skipping child {child.Name}.", LogLevel.Info);
+                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Skipping child {child.Name}.", LogLevel.Info);
                 }
             }
             foreach (var child in childrenToConvert) {
@@ -187,7 +187,7 @@ namespace LittleNPCs {
                     // Add to tracking list.
                     TrackedLittleNPCs[littleNPC] = child;
 
-                    this.Monitor.Log($"Added LittleNPC {littleNPC.Name}, deactivated child {child.Name}.", LogLevel.Info);
+                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Added LittleNPC {littleNPC.Name}, deactivated child {child.Name}.", LogLevel.Info);
             }
 
             if (config_.DoChildrenVisitVolcanoIsland) {
@@ -204,8 +204,8 @@ namespace LittleNPCs {
                 var littleNPC = item.Key;
                 var child = item.Value;
 
-                this.Monitor.Log($"ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Info);
-                    
+                this.Monitor.Log($"[{LittleNPC.GetHostTag()}] ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Info);
+
                 // Put hat on (part of the save game).
                 if (littleNPC.WrappedChildHat is not null) {
                     child.hat.Value = littleNPC.WrappedChildHat;
@@ -230,15 +230,15 @@ namespace LittleNPCs {
 
                     foreach (var guid in guidsToRemove) {
                         location.characters.Remove(guid);
-                        this.Monitor.Log($"Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
+                        this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
                         success = true;
                     }
-                
+
                     return true;
                 });
 
                 if (!success) {
-                    this.Monitor.Log($"Failed to remove LittleNPC {littleNPC.Name} from tracking list.", LogLevel.Error);
+                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Failed to remove LittleNPC {littleNPC.Name} from tracking list.", LogLevel.Error);
                 }
             }
 
@@ -269,7 +269,7 @@ namespace LittleNPCs {
             if (islandSouth is null || !islandSouth.resortRestored.Value || Game1.IsRainingHere(islandSouth) || !islandSouth.resortOpenToday.Value) {
                 return;
             }
-            
+
             var islandActivityAssignments = new List<IslandSouth.IslandActivityAssigments>();
             var last_activity_assignments = new Dictionary<Character, string>();
             var random = new Random((int) ((float) Game1.uniqueIDForThisGame * 1.21f) + (int) ((float) Game1.stats.DaysPlayed * 2.5f));
@@ -288,17 +288,17 @@ namespace LittleNPCs {
                     if (hasIslandAttire) {
                         Point dressingRoomPoint = IslandSouth.GetDressingRoomPoint(npc);
                         sb.Append($"/a1150 IslandSouth {dressingRoomPoint.X} {dressingRoomPoint.Y} change_beach");
-                        
+
                         foreach (IslandSouth.IslandActivityAssigments activity in islandActivityAssignments) {
                             string text = activity.GetScheduleStringForCharacter(npc);
                             if (!string.IsNullOrEmpty(text)) {
                                 sb.Append(text);
                             }
                         }
-                       
+
                         Point dressingRoomPoint2 = IslandSouth.GetDressingRoomPoint(npc);
                         sb.Append($"/a1730 IslandSouth {dressingRoomPoint2.X} {dressingRoomPoint2.Y} change_normal");
-                        
+
                     }
                     else {
                         bool endActivity = false;
@@ -326,7 +326,7 @@ namespace LittleNPCs {
                 }
             }
         }
-        
+
         private void OnWarped(object sender, WarpedEventArgs e) {
             // When children appear in different locations, e.g. on festivals reloadSprite()
             // is called and makes children's shadows visible again. We don't want that.
@@ -369,7 +369,7 @@ namespace LittleNPCs {
             };
 
             string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
-           
+
             if (e.Name.StartsWith($"Characters/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 // Fallback assets are loaded with low priority.
                 e.LoadFrom(() => {

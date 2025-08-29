@@ -40,11 +40,11 @@ namespace LittleNPCs.Framework {
 
             /// <summary>Whether the token requires an input argument to work, and does not provide values without it (see <see cref="AllowsInput"/>).</summary>
             public bool RequiresInput() => requiresInput_;
- 
+
             /// <summary>Whether the token may return multiple values for the given input.</summary>
             /// <param name="input">The input argument, if applicable.</param>
             public bool CanHaveMultipleValues(string input = null) => false;
-        
+
             /// <summary>Get whether the token always chooses from a set of known values for the given input. Mutually exclusive with <see cref="HasBoundedRangeValues"/>.</summary>
             /// <param name="input">The input argument, if applicable.</param>
             /// <param name="allowedValues">The possible values for the input.</param>
@@ -53,11 +53,11 @@ namespace LittleNPCs.Framework {
 
                 return false;
             }
-            
+
             /// <summary>Update the values when the context changes.</summary>
             /// <returns>Returns whether the value changed, which may trigger patch updates.</returns>
             public bool UpdateContext() => updateContext_();
-            
+
 
             /// <summary>Get whether the token is available for use.</summary>
             public bool IsReady() => isReady_();
@@ -99,7 +99,7 @@ namespace LittleNPCs.Framework {
                         false
                     )
                 );
-                
+
                 api.RegisterToken(modEntry.ModManifest, "FirstLittleNPCBirthSeason",
                     new TokenCore(
                         () => cachedLittleNPCs_[0] is not null && cachedLittleNPCs_[0].LoadedFrom != LittleNPCInfo.LoadState.None,
@@ -126,7 +126,7 @@ namespace LittleNPCs.Framework {
                         false
                     )
                 );
-                
+
                 api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCName",
                     new TokenCore(
                         () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
@@ -153,7 +153,7 @@ namespace LittleNPCs.Framework {
                         false
                     )
                 );
-                
+
                 api.RegisterToken(modEntry.ModManifest, "SecondLittleNPCBirthSeason",
                     new TokenCore(
                         () => cachedLittleNPCs_[1] is not null && cachedLittleNPCs_[1].LoadedFrom != LittleNPCInfo.LoadState.None,
@@ -223,10 +223,9 @@ namespace LittleNPCs.Framework {
             private bool UpdateFirstLittleNPC(IMonitor monitor) {
                 var littleNPC = new LittleNPCInfo(0, monitor);
                 if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[0])) {
-                    monitor.Log($"FirstLittleNPC before update: {cachedLittleNPCs_[0]}", LogLevel.Info);
                     cachedLittleNPCs_[0] = littleNPC;
 
-                    monitor.Log($"FirstLittleNPC updated: {cachedLittleNPCs_[0]}", LogLevel.Info);
+                    monitor.Log($"[{LittleNPC.GetHostTag()}] FirstLittleNPC updated: {cachedLittleNPCs_[0]}", LogLevel.Info);
 
                     return true;
                 }
@@ -237,10 +236,9 @@ namespace LittleNPCs.Framework {
             private bool UpdateSecondLittleNPC(IMonitor monitor) {
                 var littleNPC = new LittleNPCInfo(1, monitor);
                 if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[1])) {
-                    monitor.Log($"FirstLittleNPC before update: {cachedLittleNPCs_[1]}", LogLevel.Info);
                     cachedLittleNPCs_[1] = littleNPC;
 
-                    monitor.Log($"SecondLittleNPC updated: {cachedLittleNPCs_[1]}", LogLevel.Info);
+                    monitor.Log($"[{LittleNPC.GetHostTag()}] FirstLittleNPC updated: {cachedLittleNPCs_[1]}", LogLevel.Info);
 
                     return true;
                 }
