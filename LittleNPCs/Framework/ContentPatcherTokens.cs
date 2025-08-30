@@ -97,7 +97,7 @@ namespace LittleNPCs.Framework {
                     api.RegisterToken(modEntry.ModManifest, token.tokenName,
                         new TokenCore(
                             () => cachedLittleNPCs_[token.childIndex] is not null && cachedLittleNPCs_[token.childIndex].LoadedFrom != LittleNPCInfo.LoadState.None,
-                            () => UpdateLittleNPC(token.childIndex, modEntry.Monitor),
+                            () => UpdateLittleNPC(token.childIndex),
                             (input) => token.tokenResultFunc(cachedLittleNPCs_[token.childIndex], input),
                             token.requiresInput
                         )
@@ -117,13 +117,13 @@ namespace LittleNPCs.Framework {
                 });
             }
 
-            private bool UpdateLittleNPC(int childIndex, IMonitor monitor) {
-                var littleNPC = new LittleNPCInfo(childIndex, monitor);
+            private bool UpdateLittleNPC(int childIndex) {
+                var littleNPC = new LittleNPCInfo(childIndex);
                 if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
                     cachedLittleNPCs_[childIndex] = littleNPC;
 
                     string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
-                    monitor.Log($"[{LittleNPC.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
+                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
 
                     return true;
                 }

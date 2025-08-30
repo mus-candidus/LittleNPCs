@@ -14,8 +14,6 @@ namespace LittleNPCs.Framework {
     internal record LittleNPCInfo {
         public enum LoadState { None, LittleNPC, Child, SaveGame }
 
-        private IMonitor monitor_;
-
         public string Name { get; private set; }
 
         public string DisplayName { get; private set; }
@@ -26,9 +24,7 @@ namespace LittleNPCs.Framework {
 
         public LoadState LoadedFrom { get; private set; }
 
-        public LittleNPCInfo(int childIndex, IMonitor monitor) {
-            monitor_ = monitor;
-
+        public LittleNPCInfo(int childIndex) {
             if (Context.IsWorldReady) {
                 var littleNPC = ModEntry.GetLittleNPC(childIndex);
                 if (littleNPC is not null) {
@@ -38,7 +34,7 @@ namespace LittleNPCs.Framework {
                     Gender = littleNPC.Gender;
                     Birthday = littleNPC.GetBirthday();
                     LoadedFrom = LoadState.LittleNPC;
-                    monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
+                    ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -60,10 +56,10 @@ namespace LittleNPCs.Framework {
                 info.Gender = child.Gender;
                 info.Birthday = LittleNPC.GetBirthday(child, loadFromSave);
                 info.LoadedFrom = LoadState.Child;
-                info.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
+                ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
             }
             else {
-                info.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
+                ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
             }
         }
 

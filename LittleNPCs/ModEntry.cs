@@ -173,7 +173,7 @@ namespace LittleNPCs {
                 }
             }
             foreach (var child in childrenToConvert) {
-                var littleNPC = LittleNPC.FromChild(child, farmHouse, this.Monitor);
+                var littleNPC = LittleNPC.FromChild(child, farmHouse);
                     // Replace Child by LittleNPC object.
                     npcs.Add(littleNPC);
 
@@ -346,7 +346,7 @@ namespace LittleNPCs {
                 return;
             }
 
-            var littleNPC = new LittleNPCInfo(index, this.Monitor);
+            var littleNPC = new LittleNPCInfo(index);
 
             // We also use the sprite texture as portrait but should be good enough as a fallback.
             string spriteTextureName = string.Concat("Characters/Toddler",
