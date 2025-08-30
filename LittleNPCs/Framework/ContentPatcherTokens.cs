@@ -68,7 +68,7 @@ namespace LittleNPCs.Framework {
         }
 
         private class TokenImplementation {
-            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[2];
+            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[Common.MaximumNumberOfLittleNPCs];
 
             public TokenImplementation(ModEntry modEntry) {
                 var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
@@ -122,8 +122,8 @@ namespace LittleNPCs.Framework {
                 if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
                     cachedLittleNPCs_[childIndex] = littleNPC;
 
-                    string prefix = LittleNPCInfo.PrefixFromChildIndex(childIndex);
-                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
+                    string prefix = Common.PrefixFromChildIndex(childIndex);
+                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
 
                     return true;
                 }

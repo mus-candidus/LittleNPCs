@@ -34,7 +34,7 @@ namespace LittleNPCs.Framework {
                     Gender = littleNPC.Gender;
                     Birthday = littleNPC.GetBirthday();
                     LoadedFrom = LoadState.LittleNPC;
-                    ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
+                    ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -51,15 +51,15 @@ namespace LittleNPCs.Framework {
             var children = GetChildrenFromFarmHouse(loadFromSave, out FarmHouse farmHouse);
             Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
             if (child is not null) {
-                info.Name = CreateInternalAssetName(childIndex, child.Name);
+                info.Name = Common.CreateInternalAssetName(childIndex, child.Name);
                 info.DisplayName = child.Name;
                 info.Gender = child.Gender;
-                info.Birthday = LittleNPC.GetBirthday(child, loadFromSave);
+                info.Birthday = Common.GetBirthday(child, loadFromSave);
                 info.LoadedFrom = LoadState.Child;
-                ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
+                ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
             }
             else {
-                ModEntry.monitor_.VerboseLog($"[{LittleNPC.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
+                ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
             }
         }
 
@@ -69,20 +69,6 @@ namespace LittleNPCs.Framework {
 
             return farmHouse is not null ? farmHouse.getChildren()
                                          : Enumerable.Empty<Child>();
-        }
-
-        public static string CreateInternalAssetName(int childIndex, string childName) {
-            // Internal asset name to create a LittleNPC from needs a prefix.
-            string prefix = LittleNPCInfo.PrefixFromChildIndex(childIndex);
-
-            // Remove spaces. This could to equal names but there's still the prefix to distinguish them.
-            string sanitizedChildName = childName.Replace(' ', '_');
-
-            return $"{prefix}{sanitizedChildName}{Game1.player.UniqueMultiplayerID}";
-        }
-
-        public static string PrefixFromChildIndex(int childIndex) {
-            return childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
         }
     }
 }

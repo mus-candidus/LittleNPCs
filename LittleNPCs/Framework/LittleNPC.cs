@@ -34,8 +34,8 @@ namespace LittleNPCs.Framework {
             /// </summary>
             /// <param name="texture"></param>
             /// <returns></returns>
-            public static TransferImage FromTexture(Texture2D texture) {
-                var result = new TransferImage(texture.Width, texture.Height,new uint[texture.Width * texture.Height]);
+            public static LittleNPC.TransferImage FromTexture(Texture2D texture) {
+                var result = new LittleNPC.TransferImage(texture.Width, texture.Height,new uint[texture.Width * texture.Height]);
                 texture.GetData(result.Data);
 
                 return result;
@@ -51,8 +51,8 @@ namespace LittleNPCs.Framework {
 
         private record class TransferData(CharacterData CharacterData,
                                           Dictionary<string, string> MasterScheduleData,
-                                          TransferImage Sprite,
-                                          TransferImage Portrait,
+                                          LittleNPC.TransferImage Sprite,
+                                          LittleNPC.TransferImage Portrait,
                                           Dictionary<string, string> Dialogue) {
         }
 
@@ -127,14 +127,14 @@ namespace LittleNPCs.Framework {
             ChildIndex = child.GetChildIndex();
 
             // Set birthday.
-            var birthday = GetBirthday(child, false);
+            var birthday = Common.GetBirthday(child, false);
             Birthday_Day = birthday.Day;
             Birthday_Season = Utility.getSeasonKey(birthday.Season);
             yearOfBirth_.Value = birthday.Year;
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
-                ModEntry.monitor_.Log($"[{GetHostTag()}] Made child {child.Name} invisible.", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Made child {child.Name} invisible.", LogLevel.Info);
                 child.IsInvisible = true;
             }
         }
@@ -144,10 +144,10 @@ namespace LittleNPCs.Framework {
             // (0, 0) means there's noe bed available and the child will stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
                 bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1, 200)) * 64f;
-                ModEntry.monitor_.Log($"[{GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
-            string assetName = LittleNPCInfo.CreateInternalAssetName(child.GetChildIndex(), child.Name);
+            string assetName = Common.CreateInternalAssetName(child.GetChildIndex(), child.Name);
 
             AnimatedSprite sprite = new AnimatedSprite($"Characters/{assetName}", 0, 16, 32);
             Texture2D portrait = Game1.content.Load<Texture2D>($"Portraits/{assetName}");
@@ -199,7 +199,7 @@ namespace LittleNPCs.Framework {
             npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
-            TransferData transferData = new TransferData(characterData,
+            LittleNPC.TransferData transferData = new LittleNPC.TransferData(characterData,
                                                          npc._masterScheduleData,
                                                          TransferImage.FromTexture(sprite.spriteTexture),
                                                          TransferImage.FromTexture(portrait),
@@ -214,7 +214,7 @@ namespace LittleNPCs.Framework {
         }
 
         private void AssignTransferData(string transferDataJson) {
-            TransferData transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
+            LittleNPC.TransferData transferData = JsonConvert.DeserializeObject<LittleNPC.TransferData>(transferDataJson);
 
             CharacterData characterData = transferData.CharacterData;
             var npcDispositions = Game1.characterData;
@@ -228,7 +228,7 @@ namespace LittleNPCs.Framework {
 
                 var loggedCharacterData = CharacterDataToString(characterData);
 
-                ModEntry.monitor_.Log($"[{GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
             else {
                 // Data was loaded from a corresponding Data/Characters section. Assign only the fields that must be controlled by the mod,
@@ -245,12 +245,12 @@ namespace LittleNPCs.Framework {
 
                 var loggedCharacterData = CharacterDataToString(characterData);
 
-                ModEntry.monitor_.Log($"[{GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
 
             // Attempt to log and fix an issue when certain fields of NPC are not set.
             if (Birthday_Day != characterData.BirthDay || Birthday_Season != Utility.getSeasonKey(characterData.BirthSeason.Value)) {
-                ModEntry.monitor_.Log($"[{GetHostTag()}] Correcting birthday: old {Birthday_Season} {Birthday_Day}, new {characterData.BirthSeason} {characterData.BirthDay}", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Correcting birthday: old {Birthday_Season} {Birthday_Day}, new {characterData.BirthSeason} {characterData.BirthDay}", LogLevel.Warn);
                 Birthday_Day = characterData.BirthDay;
                 Birthday_Season = Utility.getSeasonKey(characterData.BirthSeason.Value);
             }
@@ -270,19 +270,19 @@ namespace LittleNPCs.Framework {
 
             // Reload schedule.
             string success = TryLoadSchedule() ? "successfully" : "unsuccessfully";
-            ModEntry.monitor_.Log($"[{GetHostTag()}] Schedule for {Name} loaded {success}.", LogLevel.Info);
+            ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Schedule for {Name} loaded {success}.", LogLevel.Info);
 
             // Check if NPCParseMasterSchedulePatch ran.
             if (ParseMasterSchedulePatchExecuted) {
-                ModEntry.monitor_.Log($"[{GetHostTag()}] NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] NPCParseMasterSchedulePatch executed for {Name}.", LogLevel.Info);
             }
             else {
-                ModEntry.monitor_.Log($"[{GetHostTag()}] NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] NPCParseMasterSchedulePatch didn't execute for {Name}. Schedule won't work.", LogLevel.Warn);
 
                 // NPC's default location might have been messed up on error.
                 reloadDefaultLocation();
 
-                ModEntry.monitor_.Log($"[{GetHostTag()}] Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Reset default location of {Name} to {DefaultMap}, {Utility.Vector2ToPoint(DefaultPosition / 64f)}.", LogLevel.Warn);
             }
         }
 
@@ -514,7 +514,7 @@ namespace LittleNPCs.Framework {
             // This is normally only for married NPCs.
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {
                 var home = getHome();
-                ModEntry.monitor_.VerboseLog($"[{GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}");
+                ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] prepareToDisembarkOnNewSchedulePath: {home.NameOrUniqueName}");
                 temporaryController = new PathFindController(this, home, new Point(home.warps[0].X, home.warps[0].Y), 2, true) {
                     NPCSchedule = true
                 };
@@ -533,34 +533,11 @@ namespace LittleNPCs.Framework {
         }
 
         public override void handleMasterScheduleFileLoadError(Exception e) {
-            ModEntry.monitor_.Log($"[{GetHostTag()}] MasterScheduleFileLoadError: {e.Message}", LogLevel.Error);
+            ModEntry.monitor_.Log($"[{Common.GetHostTag()}] MasterScheduleFileLoadError: {e.Message}", LogLevel.Error);
         }
 
         public SDate GetBirthday() {
             return new SDate(Birthday_Day, Birthday_Season, yearOfBirth_.Value);
-        }
-
-        public static SDate GetBirthday(Child child, bool loadFromSave) {
-            SDate today = (loadFromSave && SaveGame.loaded is not null)
-                        ? new SDate(SaveGame.loaded.dayOfMonth, SaveGame.loaded.currentSeason, SaveGame.loaded.year)
-                        : SDate.Now();
-
-            SDate birthday;
-            try {
-                // Subtract age of child in days from current date.
-                birthday = today.AddDays(-child.daysOld.Value);
-            }
-            catch (ArithmeticException) {
-                // Fallback.
-                birthday = new SDate(1, "spring");
-            }
-
-            return birthday;
-        }
-
-        internal static string GetHostTag()
-        {
-            return Game1.IsMasterGame ? "Host" : "Client";
         }
     }
 }

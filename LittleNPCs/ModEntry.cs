@@ -53,7 +53,7 @@ namespace LittleNPCs {
             }
 
             foreach (var pack in littleNPCPacks) {
-                this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Found content pack for LittleNPCs: {pack}", LogLevel.Info);
+                this.Monitor.Log($"[{Common.GetHostTag()}] Found content pack for LittleNPCs: {pack}", LogLevel.Info);
             }
 
             // Read config.
@@ -125,7 +125,7 @@ namespace LittleNPCs {
 
             // Put first and second child about to convert into bed.
             foreach (var child in convertibleChildren) {
-                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
+                if (Common.IsValidLittleNPCIndex(child.GetChildIndex())) {
                     child.setTilePosition(farmHouse.GetChildBedSpot(child.GetChildIndex()));
                     // Set the original child invisible during the day.
                     child.IsInvisible = true;
@@ -165,11 +165,11 @@ namespace LittleNPCs {
             var childrenToConvert = new List<Child>();
             foreach (var child in convertibleChildren) {
                 // Convert only the first two children.
-                if (IsValidLittleNPCIndex(child.GetChildIndex())) {
+                if (Common.IsValidLittleNPCIndex(child.GetChildIndex())) {
                     childrenToConvert.Add(child);
                 }
                 else {
-                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Skipping child {child.Name}.", LogLevel.Info);
+                    this.Monitor.Log($"[{Common.GetHostTag()}] Skipping child {child.Name}.", LogLevel.Info);
                 }
             }
             foreach (var child in childrenToConvert) {
@@ -187,7 +187,7 @@ namespace LittleNPCs {
                     // Add to tracking list.
                     TrackedLittleNPCs[littleNPC] = child;
 
-                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Added LittleNPC {littleNPC.Name}, deactivated child {child.Name}.", LogLevel.Info);
+                    this.Monitor.Log($"[{Common.GetHostTag()}] Added LittleNPC {littleNPC.Name}, deactivated child {child.Name}.", LogLevel.Info);
             }
 
             if (config_.DoChildrenVisitVolcanoIsland) {
@@ -204,7 +204,7 @@ namespace LittleNPCs {
                 var littleNPC = item.Key;
                 var child = item.Value;
 
-                this.Monitor.Log($"[{LittleNPC.GetHostTag()}] ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Info);
+                this.Monitor.Log($"[{Common.GetHostTag()}] ConvertLittleNPCsToChildren: {littleNPC.Name}", LogLevel.Info);
 
                 // Put hat on (part of the save game).
                 if (littleNPC.WrappedChildHat is not null) {
@@ -230,7 +230,7 @@ namespace LittleNPCs {
 
                     foreach (var guid in guidsToRemove) {
                         location.characters.Remove(guid);
-                        this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
+                        this.Monitor.Log($"[{Common.GetHostTag()}] Removed LittleNPC {littleNPC.Name} in {littleNPC.currentLocation.Name}, reactivated child {child.Name}.", LogLevel.Info);
                         success = true;
                     }
 
@@ -238,7 +238,7 @@ namespace LittleNPCs {
                 });
 
                 if (!success) {
-                    this.Monitor.Log($"[{LittleNPC.GetHostTag()}] Failed to remove LittleNPC {littleNPC.Name} from tracking list.", LogLevel.Error);
+                    this.Monitor.Log($"[{Common.GetHostTag()}] Failed to remove LittleNPC {littleNPC.Name} from tracking list.", LogLevel.Error);
                 }
             }
 
@@ -368,7 +368,7 @@ namespace LittleNPCs {
                 { "Sun", message }
             };
 
-            string prefix = LittleNPCInfo.PrefixFromChildIndex(index);
+            string prefix = Common.PrefixFromChildIndex(index);
 
             LoadSpriteSheet(e, $"Characters/{prefix}", spriteTextureName);
             LoadSpriteSheet(e, $"Portraits/{prefix}", spriteTextureName);
@@ -376,12 +376,12 @@ namespace LittleNPCs {
             if (e.Name.StartsWith($"Characters/Dialogue/{prefix}") && IsNonLocalizedAssetName(e.Name)) {
                 e.LoadFrom(() => {
                     if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
-                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+                        ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
 
                         return (Dictionary<string, string>) asset;
                     }
 
-                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
 
                     return dialogue;
                 }, AssetLoadPriority.Low);
@@ -400,7 +400,7 @@ namespace LittleNPCs {
                 // Fallback assets are loaded with low priority.
                 e.LoadFrom(() => {
                     if (CachedAssets.TryGetValue(e.Name.Name, out var asset)) {
-                        ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+                        ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
 
                         return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
                     }
@@ -411,13 +411,13 @@ namespace LittleNPCs {
                         int beachTagStart = e.Name.Name.IndexOf(beachTag, StringComparison.Ordinal);
                         string assetName = e.Name.Name.Remove(beachTagStart, beachTag.Length);
                         if (CachedAssets.TryGetValue(assetName, out asset)) {
-                            ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
+                            ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Providing cached asset {e.Name}", LogLevel.Info);
 
                             return ((LittleNPC.TransferImage) asset).ToTexture(Game1.graphics.GraphicsDevice);
                         }
                     }
 
-                    ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
+                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Providing fallback asset {e.Name}", LogLevel.Info);
 
                     // If a portrait is requested we use part of the sprite texture but that should be good enough as a fallback.
                     return Game1.content.Load<Texture2D>(spriteTextureName);
@@ -433,16 +433,6 @@ namespace LittleNPCs {
         internal static LittleNPC GetLittleNPC(int childIndex) {
             // The list of LittleNPCs is not sorted by child index, thus we need a query.
             return TrackedLittleNPCs.Keys.FirstOrDefault(c => c.ChildIndex == childIndex);
-        }
-
-        /// <summary>
-        /// Checks if child index is a valid LittleNPC index.
-        /// </summary>
-        /// <param name="childIndex"></param>
-        /// <returns></returns>
-        internal static bool IsValidLittleNPCIndex(int childIndex) {
-            // Only the first two children can be converted.
-            return (childIndex == 0 || childIndex == 1);
         }
 
         /// <summary>
