@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 
 using StardewModdingAPI;
@@ -14,16 +13,16 @@ namespace LittleNPCs.Framework {
         /// </summary>
         private class TokenCore {
             /// <summary>Function called by <code>IsReady()</code>.</summary>
-            private Func<bool> isReady_;
+            private readonly Func<bool> isReady_;
 
             /// <summary>Function called by <code>UpdateContext()</code>.</summary>
-            private Func<bool> updateContext_;
+            private readonly Func<bool> updateContext_;
 
             /// <summary>Function called by <code>GetValues()</code>.</summary>
-            private Func<string, IEnumerable<string>> getValues_;
+            private readonly Func<string, IEnumerable<string>> getValues_;
 
             /// <summary>Flag that determines whether input is required.</summary>
-            private bool requiresInput_;
+            private readonly bool requiresInput_;
 
             public TokenCore(Func<bool> isReady, Func<bool> updateContext, Func<string, IEnumerable<string>> getValues, bool requiresInput) {
                 isReady_       = isReady;
@@ -89,8 +88,8 @@ namespace LittleNPCs.Framework {
                     (1, "SecondLittleNPCBirthDay", false, (npc, _) => TokenResult(npc, "BirthDay")),
                     (1, "SecondLittleNPCAge", false, (npc, _) => TokenResult(npc, "Age")),
                     // New tokens.
-                    (0, "FirstLittleNPC", true, (npc, input) => TokenResult(npc, input)),
-                    (1, "SecondLittleNPC", true, (npc, input) => TokenResult(npc, input))
+                    (0, "FirstLittleNPC", true, TokenResult),
+                    (1, "SecondLittleNPC", true, TokenResult)
                 };
 
                 foreach (var token in tokens) {

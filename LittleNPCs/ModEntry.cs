@@ -10,18 +10,14 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 
 using StardewValley;
-using StardewValley.Buildings;
 using StardewValley.Characters;
 using StardewValley.Locations;
-using StardewValley.GameData.Characters;
 
 using LittleNPCs.Framework;
 
 
 namespace LittleNPCs {
     public class ModEntry : Mod {
-        public static IModHelper helper_;
-
         public static IMonitor monitor_;
 
         public static ModConfig config_;
@@ -34,7 +30,6 @@ namespace LittleNPCs {
         public static Dictionary<string, object> CachedAssets { get; } = new Dictionary<string, object>();
 
         public override void Entry(IModHelper helper) {
-            ModEntry.helper_ = helper;
             ModEntry.monitor_ = this.Monitor;
 
             // Check for LittleNPC content packs. This is quite heavy but the only way I know so far:
@@ -197,8 +192,6 @@ namespace LittleNPCs {
         }
 
         private void OnSaving(object sender, SavingEventArgs e) {
-            var npcDispositions = Game1.characterData;
-
             // Only convert items in our tracking list.
             foreach (var item in TrackedLittleNPCs) {
                 var littleNPC = item.Key;
@@ -272,13 +265,12 @@ namespace LittleNPCs {
 
             var islandActivityAssignments = new List<IslandSouth.IslandActivityAssigments>();
             var last_activity_assignments = new Dictionary<Character, string>();
-            var random = new Random((int) ((float) Game1.uniqueIDForThisGame * 1.21f) + (int) ((float) Game1.stats.DaysPlayed * 2.5f));
+            var random = new Random((int) (Game1.uniqueIDForThisGame * 1.21f) + (int) (Game1.stats.DaysPlayed * 2.5f));
 
             var npcs = littleNPCs.Cast<NPC>().ToList();
             islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1200, npcs, random, last_activity_assignments));
             islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1400, npcs, random, last_activity_assignments));
             islandActivityAssignments.Add(new IslandSouth.IslandActivityAssigments(1600, npcs, random, last_activity_assignments));
-            last_activity_assignments = null;
 
             foreach (NPC npc in npcs) {
                 if (random.NextDouble() < 0.4) {
@@ -322,7 +314,7 @@ namespace LittleNPCs {
                         Game1.netWorldState.Value.IslandVisitors.Add(npc.Name);
                     }
 
-                    this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", StardewModdingAPI.LogLevel.Info);
+                    this.Monitor.Log($"{npc.Name} will visit Volcano Island today.", LogLevel.Info);
                 }
             }
         }

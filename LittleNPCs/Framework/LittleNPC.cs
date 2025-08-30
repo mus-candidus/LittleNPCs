@@ -34,8 +34,8 @@ namespace LittleNPCs.Framework {
             /// </summary>
             /// <param name="texture"></param>
             /// <returns></returns>
-            public static LittleNPC.TransferImage FromTexture(Texture2D texture) {
-                var result = new LittleNPC.TransferImage(texture.Width, texture.Height,new uint[texture.Width * texture.Height]);
+            public static TransferImage FromTexture(Texture2D texture) {
+                var result = new TransferImage(texture.Width, texture.Height,new uint[texture.Width * texture.Height]);
                 texture.GetData(result.Data);
 
                 return result;
@@ -51,12 +51,12 @@ namespace LittleNPCs.Framework {
 
         private record class TransferData(CharacterData CharacterData,
                                           Dictionary<string, string> MasterScheduleData,
-                                          LittleNPC.TransferImage Sprite,
-                                          LittleNPC.TransferImage Portrait,
+                                          TransferImage Sprite,
+                                          TransferImage Portrait,
                                           Dictionary<string, string> Dialogue) {
         }
 
-        private static Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
+        private static readonly Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
 
         // Check that NPCParseMasterSchedulePatch executed.
         private bool ParseMasterSchedulePatchExecuted { get; set; }
@@ -141,7 +141,7 @@ namespace LittleNPCs.Framework {
 
         public static LittleNPC FromChild(Child child, FarmHouse farmHouse) {
             Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(child.GetChildIndex())) * 64f;
-            // (0, 0) means there's noe bed available and the child will stuck in the wall. We must avoid that.
+            // (0, 0) means there's no bed available and the child will be stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
                 bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1, 200)) * 64f;
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
@@ -199,7 +199,7 @@ namespace LittleNPCs.Framework {
             npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
-            LittleNPC.TransferData transferData = new LittleNPC.TransferData(characterData,
+            TransferData transferData = new TransferData(characterData,
                                                          npc._masterScheduleData,
                                                          TransferImage.FromTexture(sprite.spriteTexture),
                                                          TransferImage.FromTexture(portrait),
@@ -214,7 +214,7 @@ namespace LittleNPCs.Framework {
         }
 
         private void AssignTransferData(string transferDataJson) {
-            LittleNPC.TransferData transferData = JsonConvert.DeserializeObject<LittleNPC.TransferData>(transferDataJson);
+            TransferData transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
 
             CharacterData characterData = transferData.CharacterData;
             var npcDispositions = Game1.characterData;
@@ -341,7 +341,7 @@ namespace LittleNPCs.Framework {
                     Halt();
 
                     // If I'm going to prevent them from wandering into doorways, I need to do it here.
-                    controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
+                    controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random), 2);
                     if (controller.pathToEndPoint is null || !farmHouse.isTileOnMap(controller.pathToEndPoint.Last().X, controller.pathToEndPoint.Last().Y)) {
                         controller = null;
                     }
@@ -391,11 +391,11 @@ namespace LittleNPCs.Framework {
                 controller = new PathFindController(this, farmHouse, bedPoint, 2);
             }
             else {
-                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
+                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random), 2);
             }
             if (controller.pathToEndPoint is null) {
                 willDestroyObjectsUnderfoot = true;
-                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random, 0, 30), 2);
+                controller = new PathFindController(this, farmHouse, farmHouse.getRandomOpenPointInHouse(Game1.random), 2);
             }
 
             if (Game1.currentLocation.Equals(farmHouse)) {
@@ -509,7 +509,7 @@ namespace LittleNPCs.Framework {
         }
 
         protected override void prepareToDisembarkOnNewSchedulePath() {
-            // Base method only works for married NPCs but we must call it to stop running animations.
+            // Base method only works for married NPCs, but we must call it to stop running animations.
             base.prepareToDisembarkOnNewSchedulePath();
             // This is normally only for married NPCs.
             if (Utility.getGameLocationOfCharacter(this) is FarmHouse) {

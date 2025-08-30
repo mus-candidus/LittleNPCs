@@ -1,14 +1,9 @@
-using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework.Graphics;
-
 using HarmonyLib;
 
 using StardewValley;
-using StardewValley.Characters;
 using StardewValley.Pathfinding;
 using StardewValley.Menus;
-using System.Linq;
+
 using LittleNPCs.Framework.Patches;
 
 
@@ -20,12 +15,12 @@ namespace LittleNPCs.Framework {
             // PathFindController.handleWarps patch (prefix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(PathFindController), nameof(PathFindController.handleWarps)),
-                prefix:   new HarmonyMethod(typeof(Patches.PFCHandleWarpsPatch), nameof(Patches.PFCHandleWarpsPatch.Prefix))
+                prefix:   new HarmonyMethod(typeof(PFCHandleWarpsPatch), nameof(PFCHandleWarpsPatch.Prefix))
             );
             // SocialPage.FindSocialCharacters patch (postfix).
             harmony.Patch(
                 original: AccessTools.Method(typeof(SocialPage), nameof(SocialPage.FindSocialCharacters)),
-                postfix:  new HarmonyMethod(typeof(Patches.SPFindSocialCharactersPatch), nameof(Patches.SPFindSocialCharactersPatch.Postfix))
+                postfix:  new HarmonyMethod(typeof(SPFindSocialCharactersPatch), nameof(SPFindSocialCharactersPatch.Postfix))
             );
             // GameLocation.cleanupBeforeSave patch (postfix).
             harmony.Patch(

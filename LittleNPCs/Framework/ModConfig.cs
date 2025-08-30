@@ -13,6 +13,6 @@ namespace LittleNPCs.Framework {
         public bool DoChildrenWander { get; set; } = true;
         public bool DoChildrenHaveCurfew { get; set; } = true;
         public int CurfewTime { get; set; } = 1900;
-        public bool DoChildrenVisitVolcanoIsland { get; set; } = false;
+        public bool DoChildrenVisitVolcanoIsland { get; set; }
     }
 }
