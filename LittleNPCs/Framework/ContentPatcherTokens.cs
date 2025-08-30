@@ -122,7 +122,7 @@ namespace LittleNPCs.Framework {
                 if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
                     cachedLittleNPCs_[childIndex] = littleNPC;
 
-                    string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+                    string prefix = LittleNPCInfo.PrefixFromChildIndex(childIndex);
                     ModEntry.monitor_.Log($"[{LittleNPC.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}", LogLevel.Info);
 
                     return true;

@@ -368,7 +368,7 @@ namespace LittleNPCs {
                 { "Sun", message }
             };
 
-            string prefix = index == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+            string prefix = LittleNPCInfo.PrefixFromChildIndex(index);
 
             LoadSpriteSheet(e, $"Characters/{prefix}", spriteTextureName);
             LoadSpriteSheet(e, $"Portraits/{prefix}", spriteTextureName);

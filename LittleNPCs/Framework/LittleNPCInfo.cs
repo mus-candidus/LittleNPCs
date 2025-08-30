@@ -73,12 +73,16 @@ namespace LittleNPCs.Framework {
 
         public static string CreateInternalAssetName(int childIndex, string childName) {
             // Internal asset name to create a LittleNPC from needs a prefix.
-            string prefix = childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+            string prefix = LittleNPCInfo.PrefixFromChildIndex(childIndex);
 
             // Remove spaces. This could to equal names but there's still the prefix to distinguish them.
             string sanitizedChildName = childName.Replace(' ', '_');
 
             return $"{prefix}{sanitizedChildName}{Game1.player.UniqueMultiplayerID}";
+        }
+
+        public static string PrefixFromChildIndex(int childIndex) {
+            return childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
         }
     }
 }
