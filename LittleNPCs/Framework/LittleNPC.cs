@@ -69,6 +69,8 @@ namespace LittleNPCs.Framework {
 
         private readonly NetString transferDataJson_ = new NetString();
 
+        private readonly NetInt yearOfBirth_ = new NetInt();
+
         /// <summary>
         /// Wrapped child's hat, if any. Must be removed during the day.
         /// </summary>
@@ -81,7 +83,8 @@ namespace LittleNPCs.Framework {
         protected override void initNetFields() {
             base.initNetFields();
             base.NetFields.AddField(wrappedChildHat_)
-                          .AddField(transferDataJson_);
+                          .AddField(transferDataJson_)
+                          .AddField(yearOfBirth_);
 
             transferDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
                 if (newValue is not null) {
@@ -127,6 +130,7 @@ namespace LittleNPCs.Framework {
             var birthday = GetBirthday(child, false);
             Birthday_Day = birthday.Day;
             Birthday_Season = Utility.getSeasonKey(birthday.Season);
+            yearOfBirth_.Value = birthday.Year;
 
             // Ensure that the original child stays invisible.
             if (!child.IsInvisible) {
@@ -533,7 +537,7 @@ namespace LittleNPCs.Framework {
         }
 
         public SDate GetBirthday() {
-            return new SDate(Birthday_Day, Birthday_Season);
+            return new SDate(Birthday_Day, Birthday_Season, yearOfBirth_.Value);
         }
 
         public static SDate GetBirthday(Child child, bool loadFromSave) {
