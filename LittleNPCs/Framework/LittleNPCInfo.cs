@@ -54,7 +54,7 @@ namespace LittleNPCs.Framework {
                 info.DisplayName = child.Name;
                 info.Gender = child.Gender;
                 info.Birthday = Common.GetBirthday(child, loadFromSave);
-                info.LoadedFrom = LoadState.Child;
+                info.LoadedFrom = loadFromSave ? LoadState.SaveGame : LoadState.Child;
                 ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
             }
             else {
