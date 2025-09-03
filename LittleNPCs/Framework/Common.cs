@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Characters;
@@ -9,7 +11,7 @@ namespace LittleNPCs.Framework {
         /// <summary>
         /// Returns maximum number of LittleNPCs.
         /// </summary>
-        public static int MaximumNumberOfLittleNPCs => 2;
+        public static int MaximumNumberOfLittleNPCs => 4;
 
         /// <summary>
         /// Returns a tag to identify host or client for multiplayer games.
@@ -41,7 +43,13 @@ namespace LittleNPCs.Framework {
         /// <param name="childIndex"></param>
         /// <returns></returns>
         public static string PrefixFromChildIndex(int childIndex) {
-            return childIndex == 0 ? "FirstLittleNPC" : "SecondLittleNPC";
+            return childIndex switch {
+                0 => "FirstLittleNPC",
+                1 => "SecondLittleNPC",
+                2 => "ThirdLittleNPC",
+                3 => "FourthLittleNPC",
+                _ => string.Empty
+            };
         }
 
         /// <summary>
@@ -74,8 +82,8 @@ namespace LittleNPCs.Framework {
         /// <param name="childIndex"></param>
         /// <returns></returns>
         public static bool IsValidLittleNPCIndex(int childIndex) {
-            // Only the first two children can be converted.
-            return (childIndex == 0 || childIndex == 1);
+            // Only the first four children can be converted.
+            return Enumerable.Range(0, MaximumNumberOfLittleNPCs).Contains(childIndex);
         }
     }
 }

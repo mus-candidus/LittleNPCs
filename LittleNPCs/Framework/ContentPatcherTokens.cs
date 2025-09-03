@@ -89,7 +89,9 @@ namespace LittleNPCs.Framework {
                     (1, "SecondLittleNPCAge", false, (npc, _) => TokenResult(npc, "Age")),
                     // New tokens.
                     (0, "FirstLittleNPC", true, TokenResult),
-                    (1, "SecondLittleNPC", true, TokenResult)
+                    (1, "SecondLittleNPC", true, TokenResult),
+                    (2, "ThirdLittleNPC", true, TokenResult),
+                    (3, "FourthLittleNPC", true, TokenResult)
                 };
 
                 foreach (var token in tokens) {

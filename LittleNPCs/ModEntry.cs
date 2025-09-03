@@ -114,8 +114,8 @@ namespace LittleNPCs {
             // The only thing we can do here is putting all children about to convert into bed.
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
-            if (convertibleChildren.Count() > 2) {
-                this.Monitor.Log("There are more than two children, only first and second child will be converted.", LogLevel.Info);
+            if (convertibleChildren.Count() > Common.MaximumNumberOfLittleNPCs) {
+                this.Monitor.Log($"There are too many children, only {Common.MaximumNumberOfLittleNPCs} will be converted.", LogLevel.Info);
             }
 
             // Put first and second child about to convert into bed.
@@ -133,8 +133,9 @@ namespace LittleNPCs {
         }
 
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e) {
-            ProvideFallbackAssets(e, 0);
-            ProvideFallbackAssets(e, 1);
+            for (int i = 0; i < Common.MaximumNumberOfLittleNPCs; ++i) {
+                ProvideFallbackAssets(e, i);
+            }
         }
 
         private void OnOneSecondUpdateTicking(object sender, OneSecondUpdateTickingEventArgs e) {
