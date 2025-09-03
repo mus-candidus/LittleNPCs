@@ -73,21 +73,6 @@ namespace LittleNPCs.Framework {
                 var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
 
                 List<(int childIndex, string tokenName, bool requiresInput, Func<LittleNPCInfo, string, IEnumerable<string>> tokenResultFunc)> tokens = new() {
-                    // Old tokens, FirstLittleNPC.
-                    (0, "FirstLittleNPCName", false, (npc, _) => TokenResult(npc, "Name")),
-                    (0, "FirstLittleNPCDisplayName", false, (npc, _) => TokenResult(npc, "DisplayName")),
-                    (0, "FirstLittleNPCGender", false, (npc, _) => TokenResult(npc, "Gender")),
-                    (0, "FirstLittleNPCBirthSeason", false, (npc, _) => TokenResult(npc, "BirthSeason")),
-                    (0, "FirstLittleNPCBirthDay", false, (npc, _) => TokenResult(npc, "BirthDay")),
-                    (0, "FirstLittleNPCAge", false, (npc, _) => TokenResult(npc, "Age")),
-                    // Old tokens, SecondLittleNPC.
-                    (1, "SecondLittleNPCName", false, (npc, _) => TokenResult(npc, "Name")),
-                    (1, "SecondLittleNPCDisplayName", false, (npc, _) => TokenResult(npc, "DisplayName")),
-                    (1, "SecondLittleNPCGender", false, (npc, _) => TokenResult(npc, "Gender")),
-                    (1, "SecondLittleNPCBirthSeason", false, (npc, _) => TokenResult(npc, "BirthSeason")),
-                    (1, "SecondLittleNPCBirthDay", false, (npc, _) => TokenResult(npc, "BirthDay")),
-                    (1, "SecondLittleNPCAge", false, (npc, _) => TokenResult(npc, "Age")),
-                    // New tokens.
                     (0, "FirstLittleNPC", true, TokenResult),
                     (1, "SecondLittleNPC", true, TokenResult),
                     (2, "ThirdLittleNPC", true, TokenResult),
