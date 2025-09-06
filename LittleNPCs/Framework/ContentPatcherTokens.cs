@@ -92,6 +92,10 @@ namespace LittleNPCs.Framework {
             }
 
             private IEnumerable<string> TokenResult (LittleNPCInfo npc, string input) {
+                if (npc is null) {
+                    yield break;
+                }
+
                 yield return (input switch {
                     "Name"        => npc.Name,
                     "DisplayName" => npc.DisplayName,
@@ -104,11 +108,24 @@ namespace LittleNPCs.Framework {
             }
 
             private bool UpdateLittleNPC(int childIndex) {
+                string prefix = Common.PrefixFromChildIndex(childIndex);
+
+                if (ModEntry.MustUnload) {
+                    if (cachedLittleNPCs_[childIndex] is null) {
+                        return false;
+                    }
+
+                    cachedLittleNPCs_[childIndex] = null;
+
+                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] {prefix} unloaded.");
+
+                    return true;
+                }
+
                 var littleNPC = new LittleNPCInfo(childIndex);
-                if (!littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
+                if (littleNPC.LoadedFrom != LittleNPCInfo.LoadState.None && !littleNPC.Equals(cachedLittleNPCs_[childIndex])) {
                     cachedLittleNPCs_[childIndex] = littleNPC;
 
-                    string prefix = Common.PrefixFromChildIndex(childIndex);
                     ModEntry.monitor_.Log($"[{Common.GetHostTag()}] {prefix} updated: {cachedLittleNPCs_[childIndex]}");
 
                     return true;

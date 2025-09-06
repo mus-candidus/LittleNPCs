@@ -29,6 +29,8 @@ namespace LittleNPCs {
 
         public static Dictionary<string, object> CachedAssets { get; } = new Dictionary<string, object>();
 
+        public static bool MustUnload { get; private set; }
+
         public override void Entry(IModHelper helper) {
             ModEntry.monitor_ = this.Monitor;
 
@@ -109,6 +111,8 @@ namespace LittleNPCs {
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
+            MustUnload = false;
+
             // ATTENTION: OnDayStarted() is too early for child conversion, not all assets are loaded yet.
             // We have to use OnOneSecondUpdateTicking() at 60 ticks after OnDayStarted() instead.
             // The only thing we can do here is putting all children about to convert into bed.
@@ -243,6 +247,8 @@ namespace LittleNPCs {
         }
 
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
+            MustUnload = true;
+
             // Forward the call.
             OnSaving(sender, null);
         }
