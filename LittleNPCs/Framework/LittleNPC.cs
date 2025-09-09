@@ -194,6 +194,7 @@ namespace LittleNPCs.Framework {
             characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
             characterData.DisplayName = npc.displayName;
             characterData.Breather = false;
+            characterData.SpawnIfMissing = false;
 
             // Load schedule to put it into a NetRef.
             npc.getMasterScheduleRawData();

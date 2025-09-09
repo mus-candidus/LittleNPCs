@@ -249,15 +249,6 @@ namespace LittleNPCs {
         private void OnReturnedToTitle(object sender, ReturnedToTitleEventArgs e) {
             MustUnload = true;
 
-            // ATTENTION: Remove character data to prevent auto respawn on the next day!
-            var npcDispositions = Game1.characterData;
-            foreach (var c in TrackedLittleNPCs.Keys) {
-                if (npcDispositions.TryGetValue(c.Name, out _)) {
-                    npcDispositions.Remove(c.Name);
-                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Removed character data of {c.Name} to prevent respawn.");
-                }
-            }
-
             // Forward the call.
             OnSaving(sender, null);
         }
