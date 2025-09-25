@@ -24,8 +24,8 @@ namespace LittleNPCs.Framework {
             );
             // GameLocation.cleanupBeforeSave patch (postfix).
             harmony.Patch(
-                original:AccessTools.Method(typeof(GameLocation), nameof(GameLocation.cleanupBeforeSave)),
-                postfix:  new HarmonyMethod(typeof(GLCCleanupBeforeSave), nameof(GLCCleanupBeforeSave.Postfix))
+                original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.cleanupBeforeSave)),
+                postfix:  new HarmonyMethod(typeof(GLCCleanupBeforeSavePatch), nameof(GLCCleanupBeforeSavePatch.Postfix))
             );
         }
     }

@@ -6,7 +6,7 @@ namespace LittleNPCs.Framework.Patches {
     /// Postfix for <code>GameLocation.cleanupBeforeSave</code>.
     /// Removes all LittleNPCs before saving.
     /// </summary>
-    class GLCCleanupBeforeSave {
+    class GLCCleanupBeforeSavePatch {
         public static void Postfix(GameLocation __instance) {
             int removed = __instance.characters.RemoveWhere(npc => npc is LittleNPC);
             if (removed > 0) {
