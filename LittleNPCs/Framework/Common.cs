@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using StardewModdingAPI.Utilities;
+
 using StardewValley;
 using StardewValley.Characters;
 
@@ -84,6 +86,15 @@ namespace LittleNPCs.Framework {
         public static bool IsValidLittleNPCIndex(int childIndex) {
             // Only the first four children can be converted.
             return Enumerable.Range(0, MaximumNumberOfLittleNPCs).Contains(childIndex);
+        }
+
+        /// <summary>
+        /// Checks if name is a LittleNPC asset name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static bool IsLittleNPCInternalAssetName(string name) {
+            return Regex.IsMatch(name, @"(First|Second|Third|Fourth)LittleNPC\w+-?\d+");
         }
     }
 }

@@ -1,5 +1,7 @@
 using HarmonyLib;
 
+using StardewModdingAPI;
+
 using StardewValley;
 using StardewValley.Pathfinding;
 using StardewValley.Menus;
@@ -26,6 +28,11 @@ namespace LittleNPCs.Framework {
             harmony.Patch(
                 original: AccessTools.Method(typeof(GameLocation), nameof(GameLocation.cleanupBeforeSave)),
                 postfix:  new HarmonyMethod(typeof(GLCCleanupBeforeSavePatch), nameof(GLCCleanupBeforeSavePatch.Postfix))
+            );
+            // Game1.AddNPCs patch (prefix).
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Game1), nameof(Game1.AddNPCs)),
+                prefix:   new HarmonyMethod(typeof(Game1AddNPCsPatch), nameof(Game1AddNPCsPatch.Prefix))
             );
         }
     }

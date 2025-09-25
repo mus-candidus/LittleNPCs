@@ -243,6 +243,7 @@ namespace LittleNPCs.Framework {
                 npcDispositions[Name].CanReceiveGifts = characterData.CanReceiveGifts;
                 npcDispositions[Name].Home = characterData.Home;
                 npcDispositions[Name].DisplayName = characterData.DisplayName;
+                npcDispositions[Name].SpawnIfMissing = characterData.SpawnIfMissing;
 
                 var loggedCharacterData = CharacterDataToString(characterData);
 
