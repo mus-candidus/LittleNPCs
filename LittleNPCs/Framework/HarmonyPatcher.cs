@@ -7,6 +7,8 @@ using StardewValley.Pathfinding;
 using StardewValley.Menus;
 
 using LittleNPCs.Framework.Patches;
+using StardewValley.Locations;
+using xTile.Dimensions;
 
 
 namespace LittleNPCs.Framework {
@@ -33,6 +35,16 @@ namespace LittleNPCs.Framework {
             harmony.Patch(
                 original: AccessTools.Method(typeof(Game1), nameof(Game1.AddNPCs)),
                 prefix:   new HarmonyMethod(typeof(Game1AddNPCsPatch), nameof(Game1AddNPCsPatch.Prefix))
+            );
+            // NPC.canGetPregnant (prefix).
+            harmony.Patch(
+                original: AccessTools.Method(typeof(NPC), nameof(NPC.canGetPregnant)),
+                prefix:   new HarmonyMethod(typeof(NPCCanGetPregnantPatch), nameof(NPCCanGetPregnantPatch.Prefix))
+            );
+            // Utility.playersCanGetPregnantHere (prefix).
+            harmony.Patch(
+                original: AccessTools.Method(typeof(Utility), nameof(Utility.playersCanGetPregnantHere)),
+                prefix:   new HarmonyMethod(typeof(UtilPlayersCanGetPregnantHerePatch), nameof(UtilPlayersCanGetPregnantHerePatch.Prefix))
             );
         }
     }
