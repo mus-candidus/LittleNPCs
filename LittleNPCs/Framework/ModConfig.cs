@@ -8,7 +8,7 @@ namespace LittleNPCs.Framework {
     /// CurfewTime: The time of curfew when DoChildrenHaveCurfew is true. Default is 1900 (7PM).
     /// DoChildrenVisitVolcanoIsland: Children visit Volcano Island by chance. Default is false.
     /// </summary>
-    public class ModConfig {
+    public record class ModConfig {
         public int AgeWhenKidsAreModified { get; set; } = 83;
         public bool DoChildrenWander { get; set; } = true;
         public bool DoChildrenHaveCurfew { get; set; } = true;

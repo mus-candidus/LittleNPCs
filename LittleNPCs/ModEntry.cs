@@ -57,6 +57,7 @@ namespace LittleNPCs {
             config_ = helper.ReadConfig<ModConfig>();
 
             helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.Content.AssetRequested += OnAssetRequested;
             helper.Events.GameLoop.OneSecondUpdateTicking += OnOneSecondUpdateTicking;
@@ -65,6 +66,13 @@ namespace LittleNPCs {
             helper.Events.Player.Warped += OnWarped;
 
             HarmonyPatcher.Create(this);
+        }
+
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
+            // For debugging: print details about children.
+            foreach (var child in Game1.player.getChildren()) {
+                this.Monitor.Log($"[{Common.GetHostTag()}] Child of {Game1.player.Name}: {child.Name}, {child.daysOld.Value} days old");
+            }
         }
 
         private void OnGameLaunched(object sender, GameLaunchedEventArgs e) {
@@ -112,6 +120,9 @@ namespace LittleNPCs {
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
             MustUnload = false;
+            
+            // For debugging: print configuration.
+            this.Monitor.LogOnce($"[{Common.GetHostTag()}] ModConfig: {config_}");
 
             // ATTENTION: OnDayStarted() is too early for child conversion, not all assets are loaded yet.
             // We have to use OnOneSecondUpdateTicking() at 60 ticks after OnDayStarted() instead.
