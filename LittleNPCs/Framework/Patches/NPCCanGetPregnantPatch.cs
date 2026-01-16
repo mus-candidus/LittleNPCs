@@ -42,7 +42,7 @@ namespace LittleNPCs.Framework.Patches {
             if (homeOfFarmer.upgradeLevel >= 2 && spouseFriendship.DaysUntilBirthing < 0 && friendshipHeartLevelForNPC >= 10 && spouse.GetDaysMarried() >= 7) {
                 if (children.Count != 0) {
                     // Compare to maximum number of children and verify that all of them are toddlers.
-                    __result = (children.Count < Common.MaximumNumberOfLittleNPCs && children.All(c => c.Age > Child.crawler));
+                    __result = (children.Count < ModEntry.config_.MaximumNumberOfChildren && children.All(c => c.Age > Child.crawler));
                 }
                 else {
                     __result = true;

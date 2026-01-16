@@ -18,7 +18,7 @@ namespace LittleNPCs.Framework.Patches {
                 // Disable original method.
                 return false;
             }
-            if (farmHouse.getChildrenCount() < Common.MaximumNumberOfLittleNPCs && farmHouse.upgradeLevel >= 2 && children.Count < Common.MaximumNumberOfLittleNPCs) {
+            if (farmHouse.getChildrenCount() < ModEntry.config_.MaximumNumberOfChildren && farmHouse.upgradeLevel >= 2 && children.Count < ModEntry.config_.MaximumNumberOfChildren) {
                 if (children.Count != 0) {
                     // Verify that all children are toddlers.
                     __result = children.All(c => c.Age > Child.crawler);

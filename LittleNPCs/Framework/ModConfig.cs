@@ -7,6 +7,7 @@ namespace LittleNPCs.Framework {
     /// DoChildrenHaveCurfew: If true, children will head home at curfew time.
     /// CurfewTime: The time of curfew when DoChildrenHaveCurfew is true. Default is 1900 (7PM).
     /// DoChildrenVisitVolcanoIsland: Children visit Volcano Island by chance. Default is false.
+    /// MaximumNumberOfChildren: Maximum number of children. Default is 4.
     /// </summary>
     public record class ModConfig {
         public int AgeWhenKidsAreModified { get; set; } = 83;
@@ -14,5 +15,7 @@ namespace LittleNPCs.Framework {
         public bool DoChildrenHaveCurfew { get; set; } = true;
         public int CurfewTime { get; set; } = 1900;
         public bool DoChildrenVisitVolcanoIsland { get; set; }
+        public int MaximumNumberOfChildren { get; set; } = 4;
+        public int MaximumNumberOfLittleNPCs { get; set; } = 4;
     }
 }

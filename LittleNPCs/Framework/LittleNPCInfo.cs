@@ -48,7 +48,7 @@ namespace LittleNPCs.Framework {
 
         private static void AssignFromChild(LittleNPCInfo info, bool loadFromSave, int childIndex) {
             var children = GetChildrenFromFarmHouse(loadFromSave, out FarmHouse farmHouse);
-            Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex);
+            Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex && Common.IsValidLittleNPCIndex(childIndex));
             if (child is not null) {
                 info.Name = Common.CreateInternalAssetName(childIndex, child.Name);
                 info.DisplayName = child.Name;

@@ -67,7 +67,7 @@ namespace LittleNPCs.Framework {
         }
 
         private class TokenImplementation {
-            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[Common.MaximumNumberOfLittleNPCs];
+            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[ModEntry.config_.MaximumNumberOfChildren];
 
             public TokenImplementation(ModEntry modEntry) {
                 var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");

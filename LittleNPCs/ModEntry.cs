@@ -86,7 +86,8 @@ namespace LittleNPCs {
 
             configMenu.Register(this.ModManifest,
                                 () => config_ = new ModConfig(),
-                                () => this.Helper.WriteConfig(config_));
+                                () => this.Helper.WriteConfig(config_),
+                                true);
 
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.AgeWhenKidsAreModified,
@@ -116,6 +117,22 @@ namespace LittleNPCs {
                                      () => config_.DoChildrenVisitVolcanoIsland,
                                      (val) => config_.DoChildrenVisitVolcanoIsland = val,
                                      () => "Do children visit Volcano Island");
+
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.MaximumNumberOfChildren,
+                                       (val) => config_.MaximumNumberOfChildren = val,
+                                       () => "Maximum number of children",
+                                       min: 1,
+                                       max: 4,
+                                       interval: 1);
+
+            configMenu.AddNumberOption(this.ModManifest,
+                                       () => config_.MaximumNumberOfLittleNPCs,
+                                       (val) => config_.MaximumNumberOfLittleNPCs = val,
+                                       () => "Maximum number of children\nthat become LittleNPCs",
+                                       min: 1,
+                                       max: 4,
+                                       interval: 1);
         }
 
         private void OnDayStarted(object sender, DayStartedEventArgs e) {
@@ -129,8 +146,14 @@ namespace LittleNPCs {
             // The only thing we can do here is putting all children about to convert into bed.
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
             var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
-            if (convertibleChildren.Count() > Common.MaximumNumberOfLittleNPCs) {
-                this.Monitor.Log($"There are too many children, only {Common.MaximumNumberOfLittleNPCs} will be converted.", LogLevel.Info);
+
+            // Consistency check.
+            if (ModEntry.config_.MaximumNumberOfLittleNPCs > ModEntry.config_.MaximumNumberOfChildren) {
+                ModEntry.config_.MaximumNumberOfLittleNPCs = ModEntry.config_.MaximumNumberOfChildren;
+            }
+
+            if (convertibleChildren.Count() > ModEntry.config_.MaximumNumberOfLittleNPCs) {
+                this.Monitor.Log($"There are too many children, only {ModEntry.config_.MaximumNumberOfLittleNPCs} will be converted.", LogLevel.Info);
             }
 
             // Put first and second child about to convert into bed.
@@ -148,7 +171,7 @@ namespace LittleNPCs {
         }
 
         private void OnAssetRequested(object sender, AssetRequestedEventArgs e) {
-            for (int i = 0; i < Common.MaximumNumberOfLittleNPCs; ++i) {
+            for (int i = 0; i < ModEntry.config_.MaximumNumberOfLittleNPCs; ++i) {
                 ProvideFallbackAssets(e, i);
             }
         }

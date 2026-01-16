@@ -11,11 +11,6 @@ using StardewValley.Characters;
 namespace LittleNPCs.Framework {
     internal static class Common {
         /// <summary>
-        /// Returns maximum number of LittleNPCs.
-        /// </summary>
-        public static int MaximumNumberOfLittleNPCs => 4;
-
-        /// <summary>
         /// Returns a tag to identify host or client for multiplayer games.
         /// </summary>
         /// <returns></returns>
@@ -85,7 +80,7 @@ namespace LittleNPCs.Framework {
         /// <returns></returns>
         public static bool IsValidLittleNPCIndex(int childIndex) {
             // Only the first four children can be converted.
-            return Enumerable.Range(0, MaximumNumberOfLittleNPCs).Contains(childIndex);
+            return Enumerable.Range(0, ModEntry.config_.MaximumNumberOfLittleNPCs).Contains(childIndex);
         }
 
         /// <summary>
