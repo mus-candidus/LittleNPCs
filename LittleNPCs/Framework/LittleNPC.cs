@@ -539,7 +539,14 @@ namespace LittleNPCs.Framework {
         }
 
         public SDate GetBirthday() {
-            return new SDate(Birthday_Day, Birthday_Season, yearOfBirth_.Value);
+            try {
+                return new SDate(Birthday_Day, Birthday_Season, yearOfBirth_.Value);
+            }
+            catch (Exception e) {
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Error in GetBirthday, using spring 1 as fallback: {e.Message}", LogLevel.Warn);
+
+                return new SDate(1, Season.Spring);
+            }
         }
     }
 }

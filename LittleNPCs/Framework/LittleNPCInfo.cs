@@ -48,7 +48,7 @@ namespace LittleNPCs.Framework {
 
         private static void AssignFromChild(LittleNPCInfo info, bool loadFromSave, int childIndex) {
             var children = GetChildrenFromFarmHouse(loadFromSave, out FarmHouse farmHouse);
-            Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && c.GetChildIndex() == childIndex && Common.IsValidLittleNPCIndex(childIndex));
+            Child child = children.FirstOrDefault(c => c.daysOld.Value >= ModEntry.config_.AgeWhenKidsAreModified && GetChildIndex(c, loadFromSave) == childIndex && Common.IsValidLittleNPCIndex(childIndex));
             if (child is not null) {
                 info.Name = Common.CreateInternalAssetName(childIndex, child.Name);
                 info.DisplayName = child.Name;
@@ -62,12 +62,33 @@ namespace LittleNPCs.Framework {
             }
         }
 
+        /// <summary>
+        /// Returns all children in farm house. Supports loading from save.
+        /// </summary>
+        /// <param name="loadFromSave"></param>
+        /// <param name="farmHouse"></param>
+        /// <returns></returns>
         private static IEnumerable<Child> GetChildrenFromFarmHouse(bool loadFromSave, out FarmHouse farmHouse) {
             farmHouse = loadFromSave ? SaveGame.loaded?.locations.OfType<FarmHouse>().FirstOrDefault(l => l.Name == "FarmHouse")
                                      : Utility.getHomeOfFarmer(Game1.player);
 
             return farmHouse is not null ? farmHouse.getChildren()
                                          : Enumerable.Empty<Child>();
+        }
+
+        /// <summary>
+        /// Returns the index of the given child. Supports loading from save.
+        /// </summary>
+        /// <param name="child"></param>
+        /// <param name="loadFromSave"></param>
+        /// <returns></returns>
+        private static int GetChildIndex(Child child, bool loadFromSave) {
+            // Game implementation of GetChildIndex() fails if called before locations are initialized.
+            // We must work around that.
+            var children = GetChildrenFromFarmHouse(loadFromSave, out _).ToList();
+            children.Sort((Child a, Child b) => a.daysOld.Value.CompareTo(b.daysOld.Value));
+            children.Reverse();
+            return children.IndexOf(child);
         }
     }
 }
