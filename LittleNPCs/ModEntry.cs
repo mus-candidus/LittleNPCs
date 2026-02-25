@@ -24,7 +24,7 @@ namespace LittleNPCs {
 
         private int? relativeSeconds_;
 
-        // We have to keep track of LittleNPCs vor various reasons.
+        // We have to keep track of LittleNPCs for various reasons.
         public static Dictionary<LittleNPC, Child> TrackedLittleNPCs { get; } = new Dictionary<LittleNPC, Child>();
 
         public static Dictionary<string, object> CachedAssets { get; } = new Dictionary<string, object>();
@@ -66,6 +66,10 @@ namespace LittleNPCs {
             helper.Events.Player.Warped += OnWarped;
 
             HarmonyPatcher.Create(this);
+        }
+
+        public override ILittleNPCsAPI GetApi() {
+            return new LittleNPCsAPI();
         }
 
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e) {
