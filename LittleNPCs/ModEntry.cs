@@ -23,6 +23,16 @@ namespace LittleNPCs {
         public static ModConfig config_;
 
         private int? relativeSeconds_;
+        
+        // Translations. Must be properties, otherwise they might not have been initialized when required.
+        private string ContentPackMissingText => this.Helper.Translation.Get("hello.content-pack-missing");
+        private string AgeInDaysWhenChildrenBecomeLittleNPCsText => this.Helper.Translation.Get("config.age-in-days-when-children-become-little-npcs");
+        private string DoChildrenRunAroundInTheHouseText => this.Helper.Translation.Get("config.do-children-run-around-in-the-house");
+        private string DoChildrenHaveCurfewText => this.Helper.Translation.Get("config.do-children-have-curfew");
+        private string CurfewTimeText => this.Helper.Translation.Get("config.curfew-time");
+        private string DoChildrenVisitVolcanoIslandText => this.Helper.Translation.Get("config.do-children-visit-volcano-island");
+        private string MaximumNumberOfChildrenText => this.Helper.Translation.Get("config.maximum-number-of-children");
+        private string MaximumNumberOfLittleNPCsText => this.Helper.Translation.Get("config.maximum-number-of-little-npcs");
 
         // We have to keep track of LittleNPCs for various reasons.
         public static Dictionary<LittleNPC, Child> TrackedLittleNPCs { get; } = new Dictionary<LittleNPC, Child>();
@@ -96,23 +106,23 @@ namespace LittleNPCs {
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.AgeInDaysWhenChildrenBecomeLittleNPCs,
                                        (val) => config_.AgeInDaysWhenChildrenBecomeLittleNPCs = val,
-                                       () => "Age in days when children become LittleNPCs",
+                                       () => AgeInDaysWhenChildrenBecomeLittleNPCsText,
                                        min: 1);
 
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenRunAroundInTheHouse,
                                      (val) => config_.DoChildrenRunAroundInTheHouse = val,
-                                     () => "Do children run around in the house");
+                                     () => DoChildrenRunAroundInTheHouseText);
 
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenHaveCurfew,
                                      (val) => config_.DoChildrenHaveCurfew = val,
-                                     () => "Do children have curfew");
+                                     () => DoChildrenHaveCurfewText);
 
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.CurfewTime,
                                        (val) => config_.CurfewTime = val,
-                                       () => "Curfew time",
+                                       () => CurfewTimeText,
                                        min: 1200,
                                        max: 2400,
                                        interval: 100);
@@ -120,12 +130,12 @@ namespace LittleNPCs {
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenVisitVolcanoIsland,
                                      (val) => config_.DoChildrenVisitVolcanoIsland = val,
-                                     () => "Do children visit Volcano Island");
+                                     () => DoChildrenVisitVolcanoIslandText);
 
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.MaximumNumberOfChildren,
                                        (val) => config_.MaximumNumberOfChildren = val,
-                                       () => "Maximum number of children",
+                                       () => MaximumNumberOfChildrenText,
                                        min: 1,
                                        max: 4,
                                        interval: 1);
@@ -133,7 +143,7 @@ namespace LittleNPCs {
             configMenu.AddNumberOption(this.ModManifest,
                                        () => config_.MaximumNumberOfLittleNPCs,
                                        (val) => config_.MaximumNumberOfLittleNPCs = val,
-                                       () => "Maximum number of children\nthat become LittleNPCs",
+                                       () => MaximumNumberOfLittleNPCsText,
                                        min: 1,
                                        max: 4,
                                        interval: 1);
@@ -390,10 +400,7 @@ namespace LittleNPCs {
                                                      (littleNPC.Gender == Gender.Male) ? "" : "_girl");
 
             // Fallback dialogue.
-            string message = string.Concat("Hi dad! Please install a content pack for me.",
-                                           "^Hi mom! Please install a content pack for me.",
-                                           "#$e#",
-                                           "Look for StardewValley Mod 15152 on nexusmods.com for details.");
+            string message = ContentPackMissingText;
 
             var dialogue = new Dictionary<string, string>() {
                 { "Mon", message },

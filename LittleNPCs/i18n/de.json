@@ -1,0 +1,10 @@
+{
+  "hello.content-pack-missing": "Hallo ${Papa^Mama}$! Bitte installiere ein Content Pack für mich.#$e#Suche nach StardewValley-Mod 15152 auf nexusmods.com für Details.",
+  "config.age-in-days-when-children-become-little-npcs": "Alter in Tagen,\nwenn Kinder LittleNPCs werden",
+  "config.do-children-run-around-in-the-house": "Kinder laufen im Haus herum",
+  "config.do-children-have-curfew": "Kinder haben eine Sperrstunde",
+  "config.curfew-time": "Sperrstunde",
+  "config.do-children-visit-volcano-island": "Kinder besuchen die Vulkaninsel",
+  "config.maximum-number-of-children": "Maximale Anzahl von Kindern",
+  "config.maximum-number-of-little-npcs": "Maximale Anzahl von Kindern,\ndie LittleNPCs werden"
+}
