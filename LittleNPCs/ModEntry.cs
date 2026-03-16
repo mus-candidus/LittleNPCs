@@ -94,15 +94,15 @@ namespace LittleNPCs {
                                 true);
 
             configMenu.AddNumberOption(this.ModManifest,
-                                       () => config_.AgeWhenKidsAreModified,
-                                       (val) => config_.AgeWhenKidsAreModified = val,
-                                       () => "Age when kids are modified",
+                                       () => config_.AgeInDaysWhenChildrenBecomeLittleNPCs,
+                                       (val) => config_.AgeInDaysWhenChildrenBecomeLittleNPCs = val,
+                                       () => "Age in days when children become LittleNPCs",
                                        min: 1);
 
             configMenu.AddBoolOption(this.ModManifest,
-                                     () => config_.DoChildrenWander,
-                                     (val) => config_.DoChildrenWander = val,
-                                     () => "Do children wander");
+                                     () => config_.DoChildrenRunAroundInTheHouse,
+                                     (val) => config_.DoChildrenRunAroundInTheHouse = val,
+                                     () => "Do children run around in the house");
 
             configMenu.AddBoolOption(this.ModManifest,
                                      () => config_.DoChildrenHaveCurfew,
@@ -149,7 +149,7 @@ namespace LittleNPCs {
             // We have to use OnOneSecondUpdateTicking() at 60 ticks after OnDayStarted() instead.
             // The only thing we can do here is putting all children about to convert into bed.
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
-            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
+            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeInDaysWhenChildrenBecomeLittleNPCs);
 
             // Consistency check.
             if (ModEntry.config_.MaximumNumberOfLittleNPCs > ModEntry.config_.MaximumNumberOfChildren) {
@@ -196,7 +196,7 @@ namespace LittleNPCs {
 
             var farmHouse = Utility.getHomeOfFarmer(Game1.player);
 
-            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeWhenKidsAreModified);
+            var convertibleChildren = farmHouse.getChildren().Where(c => c.daysOld.Value >= config_.AgeInDaysWhenChildrenBecomeLittleNPCs);
 
             var npcs = farmHouse.characters;
 

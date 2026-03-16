@@ -6,6 +6,6 @@ namespace LittleNPCs.Framework {
         public bool IsValidLittleNPCIndex(int childIndex) => Common.IsValidLittleNPCIndex(childIndex);
 
         /// <inheritdoc />
-        public int DaysAfterKidsGrowUp => ModEntry.config_.AgeWhenKidsAreModified;
+        public int DaysAfterKidsGrowUp => ModEntry.config_.AgeInDaysWhenChildrenBecomeLittleNPCs;
     }
 }

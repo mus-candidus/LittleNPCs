@@ -331,7 +331,7 @@ namespace LittleNPCs.Framework {
                 // The NPCs get warped out of farm house before they reach their random destination points in the house
                 // and thus are doomed to walk around in the BusStop location endlessly without a chance to reach their destination!
                 else if (controller is null
-                         && ModEntry.config_.DoChildrenWander
+                         && ModEntry.config_.DoChildrenRunAroundInTheHouse
                          && (Schedule is null || !Schedule.ContainsKey(Game1.timeOfDay))
                          && Game1.timeOfDay % 100 == 0
                          && !IsTimeForBed) {
