@@ -74,6 +74,10 @@ namespace LittleNPCs {
             helper.Events.GameLoop.Saving += OnSaving;
             helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
             helper.Events.Player.Warped += OnWarped;
+            // For debugging only.
+            helper.Events.Specialized.LoadStageChanged += (sender, e) => {
+                this.Monitor.Log($"[{Common.GetHostTag()}] LoadStageChanged: {e.OldStage} -> {e.NewStage}", LogLevel.Trace);
+            };
 
             HarmonyPatcher.Create(this);
         }

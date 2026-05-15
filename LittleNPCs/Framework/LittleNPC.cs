@@ -227,6 +227,8 @@ namespace LittleNPCs.Framework {
                 npcDispositions[Name] = characterData;
                 Breather = characterData.Breather;
 
+                reloadData();
+
                 var loggedCharacterData = CharacterDataToString(characterData);
 
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
@@ -244,6 +246,8 @@ namespace LittleNPCs.Framework {
                 npcDispositions[Name].Home = characterData.Home;
                 npcDispositions[Name].DisplayName = characterData.DisplayName;
                 npcDispositions[Name].SpawnIfMissing = characterData.SpawnIfMissing;
+
+                reloadData();
 
                 var loggedCharacterData = CharacterDataToString(characterData);
 
@@ -542,10 +546,20 @@ namespace LittleNPCs.Framework {
             try {
                 return new SDate(Birthday_Day, Birthday_Season, yearOfBirth_.Value);
             }
-            catch (Exception e) {
-                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Error in GetBirthday, using spring 1 as fallback: {e.Message}", LogLevel.Warn);
+            catch (Exception e1) {
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Error in GetBirthday (reading NPC properties), trying GetData() instead: {e1.Message}", LogLevel.Warn);
 
-                return new SDate(1, Season.Spring);
+                try {
+                    var characterData = GetData();
+
+                    // Exception is possible here but since it's caught immediately we don't care.
+                    return new SDate(characterData.BirthDay, characterData.BirthSeason.Value, yearOfBirth_.Value);
+                }
+                catch (Exception e2) {
+                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Error in GetBirthday (calling GetData()), using spring 1 as fallback: {e2.Message}", LogLevel.Warn);
+
+                    return new SDate(1, Season.Spring);
+                }
             }
         }
     }
