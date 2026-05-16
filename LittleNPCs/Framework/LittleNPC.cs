@@ -58,6 +58,8 @@ namespace LittleNPCs.Framework {
 
         private static readonly Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
 
+        private const string customFieldTag_ = "IsLittleNPC-cb488ff5-cf05-4953-ab62-788c5971a054";
+
         // Check that NPCParseMasterSchedulePatch executed.
         private bool ParseMasterSchedulePatchExecuted { get; set; }
 
@@ -195,6 +197,8 @@ namespace LittleNPCs.Framework {
             characterData.DisplayName = npc.displayName;
             characterData.Breather = false;
             characterData.SpawnIfMissing = false;
+            // Set a custom field so we can check if data was modified outside the mod.
+            characterData.CustomFields = new Dictionary<string, string>() { { customFieldTag_, "true" } };
 
             // Load schedule to put it into a NetRef.
             npc.getMasterScheduleRawData();
@@ -246,19 +250,14 @@ namespace LittleNPCs.Framework {
                 npcDispositions[Name].Home = characterData.Home;
                 npcDispositions[Name].DisplayName = characterData.DisplayName;
                 npcDispositions[Name].SpawnIfMissing = characterData.SpawnIfMissing;
+                npcDispositions[Name].CustomFields ??= new Dictionary<string, string>();
+                npcDispositions[Name].CustomFields.TryAdd(customFieldTag_, characterData.CustomFields[customFieldTag_]);
 
                 reloadData();
 
                 var loggedCharacterData = CharacterDataToString(characterData);
 
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
-            }
-
-            // Attempt to log and fix an issue when certain fields of NPC are not set.
-            if (Birthday_Day != characterData.BirthDay || Birthday_Season != Utility.getSeasonKey(characterData.BirthSeason.Value)) {
-                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Correcting birthday: old {Birthday_Season} {Birthday_Day}, new {characterData.BirthSeason} {characterData.BirthDay}", LogLevel.Warn);
-                Birthday_Day = characterData.BirthDay;
-                Birthday_Season = Utility.getSeasonKey(characterData.BirthSeason.Value);
             }
 
             ModEntry.CachedAssets[$"Characters/{Name}"] = transferData.Sprite;
@@ -308,6 +307,24 @@ namespace LittleNPCs.Framework {
                     $"{characterData.Home.First().Location} {characterData.Home.First().Tile}",
                     characterData.DisplayName);
             return loggedCharacterData;
+        }
+
+        /// <inheritdoc/>
+        public override void reloadData() {
+            base.reloadData();
+
+            // We have to survive core asset propagation. That's why we must check and maybe reconstruct the corresponding CharacterData entry.
+            if (Game1.characterData.TryGetValue(Name, out CharacterData data) && ModEntry.TrackedLittleNPCs.ContainsKey(this)) {
+                // If the custom field is set we assume that character data is usable.
+                if ((data.CustomFields?.TryGetValue(customFieldTag_,  out string isLittleNPC) ?? false) && isLittleNPC == "true") {
+                    return;
+                }
+
+                // Custom field not set, reassign character data.
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Reassigning character data for {Name} after reset.", LogLevel.Info);
+
+                AssignTransferData(transferDataJson_.Value);
+            }
         }
 
         /// <inheritdoc/>
