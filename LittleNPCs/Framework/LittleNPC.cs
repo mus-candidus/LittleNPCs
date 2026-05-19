@@ -169,46 +169,43 @@ namespace LittleNPCs.Framework {
             // Set displayName. Virtual property, can't be set in the constructor.
             npc.displayName = child.Name;
 
-            // Generate and set NPCDispositions.
-            // ATTENTION: Don't use CP to set Data/NPCDispositions, you will get into big trouble then.
-            // If we add something to 'Data/NPCDispositions' the game attempts to create that NPC.
-            // We must control NPC creation, however, so we generate and set dispositions here.
-            // Fortunately all important data is provided by the save file.
-            // Note that the content pack must not provide NPCDispositions.
-            // Example:
-            // child/neutral/outgoing/neutral/male/non-datable/null/Town/summer 23//Farmhouse 23 5/Eric
-            // child/neutral/outgoing/neutral/female/non-datable/null/Town/summer 24//Farmhouse 27 5/Sandra
-            var characterData = new CharacterData();
-            characterData.Age = NpcAge.Child;
-            characterData.Manner = NpcManner.Neutral;
-            characterData.SocialAnxiety = NpcSocialAnxiety.Outgoing;
-            characterData.Optimism = NpcOptimism.Neutral;
-            characterData.Gender = npc.Gender;
-            characterData.CanBeRomanced = false;
-            characterData.HomeRegion = "Town";
-            characterData.BirthSeason = Enum.Parse<Season>(npc.Birthday_Season, true);
-            characterData.BirthDay = npc.Birthday_Day;
-            characterData.CanReceiveGifts = true;
-            var homeData = new CharacterHomeData();
-            homeData.Id = "Default";
-            homeData.Location = farmHouse.NameOrUniqueName;
-            homeData.Tile = Utility.Vector2ToPoint(bedSpot / 64f);
-            characterData.Home = Enumerable.Repeat(homeData, 1).ToList();
-            characterData.DisplayName = npc.displayName;
-            characterData.Breather = false;
-            characterData.SpawnIfMissing = false;
-            // Set a custom field so we can check if data was modified outside the mod.
-            characterData.CustomFields = new Dictionary<string, string>() { { customFieldTag_, "true" } };
+            // Generate and set character data.
+            // ATTENTION: Fields such as birthday, gender, home... must not be set by CP.
+            // We must control NPC creation, so we generate and set important data here.
+            // Fortunately all necessary information can be obtained from the child object.
+            var homeData = new CharacterHomeData() {
+                Id = "Default",
+                Location = farmHouse.NameOrUniqueName,
+                Tile = Utility.Vector2ToPoint(bedSpot / 64f)
+            };
+            var characterData = new CharacterData() {
+                Age = NpcAge.Child,
+                Manner = NpcManner.Neutral,
+                SocialAnxiety = NpcSocialAnxiety.Outgoing,
+                Optimism = NpcOptimism.Neutral,
+                Gender = npc.Gender,
+                CanBeRomanced = false,
+                HomeRegion = "Town",
+                BirthSeason = Enum.Parse<Season>(npc.Birthday_Season, true),
+                BirthDay = npc.Birthday_Day,
+                CanReceiveGifts = true,
+                Home = Enumerable.Repeat(homeData, 1).ToList(),
+                DisplayName = npc.displayName,
+                Breather = false,
+                SpawnIfMissing = false,
+                // Set a custom field so we can check if data was modified outside the mod.
+                CustomFields = new Dictionary<string, string>() { { customFieldTag_, "true" } }
+            };
 
             // Load schedule to put it into a NetRef.
             npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
-            TransferData transferData = new TransferData(characterData,
-                                                         npc._masterScheduleData,
-                                                         TransferImage.FromTexture(sprite.spriteTexture),
-                                                         TransferImage.FromTexture(portrait),
-                                                         npc.Dialogue);
+            var transferData = new TransferData(characterData,
+                                                npc._masterScheduleData,
+                                                TransferImage.FromTexture(sprite.spriteTexture),
+                                                TransferImage.FromTexture(portrait),
+                                                npc.Dialogue);
 
             string transferDataJson = JsonConvert.SerializeObject(transferData);
 
@@ -219,43 +216,41 @@ namespace LittleNPCs.Framework {
         }
 
         private void AssignTransferData(string transferDataJson) {
-            TransferData transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
+            var transferData = JsonConvert.DeserializeObject<TransferData>(transferDataJson);
 
-            CharacterData characterData = transferData.CharacterData;
-            var npcDispositions = Game1.characterData;
-
-            if (!npcDispositions.TryGetValue(Name, out _)) {
+            var characterData = GetData();
+            if (characterData is null) {
                 // Assign new character data to trigger NPC creation. Breather is a bit special: It's part of character data
                 // AND it must be set for the NPC. SDV does that internally when a corresponding Data/Characters entry exists.
                 // That's not the case here so we must do it explicitly.
-                npcDispositions[Name] = characterData;
-                Breather = characterData.Breather;
+                Game1.characterData[Name] = transferData.CharacterData;
+                Breather = transferData.CharacterData.Breather;
 
                 reloadData();
 
-                var loggedCharacterData = CharacterDataToString(characterData);
+                var loggedCharacterData = CharacterDataToString(transferData.CharacterData);
 
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Created character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
             else {
                 // Data was loaded from a corresponding Data/Characters section. Assign only the fields that must be controlled by the mod,
                 // everything else can be configured by the content pack.
-                npcDispositions[Name].Age = characterData.Age;
-                npcDispositions[Name].Gender = characterData.Gender;
-                npcDispositions[Name].CanBeRomanced = characterData.CanBeRomanced;
-                npcDispositions[Name].HomeRegion = characterData.HomeRegion;
-                npcDispositions[Name].BirthSeason = characterData.BirthSeason;
-                npcDispositions[Name].BirthDay = characterData.BirthDay;
-                npcDispositions[Name].CanReceiveGifts = characterData.CanReceiveGifts;
-                npcDispositions[Name].Home = characterData.Home;
-                npcDispositions[Name].DisplayName = characterData.DisplayName;
-                npcDispositions[Name].SpawnIfMissing = characterData.SpawnIfMissing;
-                npcDispositions[Name].CustomFields ??= new Dictionary<string, string>();
-                npcDispositions[Name].CustomFields.TryAdd(customFieldTag_, characterData.CustomFields[customFieldTag_]);
+                characterData.Age = transferData.CharacterData.Age;
+                characterData.Gender = transferData.CharacterData.Gender;
+                characterData.CanBeRomanced = transferData.CharacterData.CanBeRomanced;
+                characterData.HomeRegion = transferData.CharacterData.HomeRegion;
+                characterData.BirthSeason = transferData.CharacterData.BirthSeason;
+                characterData.BirthDay = transferData.CharacterData.BirthDay;
+                characterData.CanReceiveGifts = transferData.CharacterData.CanReceiveGifts;
+                characterData.Home = transferData.CharacterData.Home;
+                characterData.DisplayName = transferData.CharacterData.DisplayName;
+                characterData.SpawnIfMissing = transferData.CharacterData.SpawnIfMissing;
+                characterData.CustomFields ??= new Dictionary<string, string>();
+                characterData.CustomFields.TryAdd(customFieldTag_, transferData.CharacterData.CustomFields[customFieldTag_]);
 
                 reloadData();
 
-                var loggedCharacterData = CharacterDataToString(characterData);
+                var loggedCharacterData = CharacterDataToString(transferData.CharacterData);
 
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
