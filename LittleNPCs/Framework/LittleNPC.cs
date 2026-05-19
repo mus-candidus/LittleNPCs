@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 using Microsoft.Xna.Framework;
@@ -20,6 +21,7 @@ using Newtonsoft.Json;
 
 
 namespace LittleNPCs.Framework {
+    [SuppressMessage("ReSharper", "InconsistentNaming", Justification = "Class name matches mod name.")]
     public class LittleNPC : NPC {
         /// <summary>
         /// This class is used to transfer an image as JSON.
@@ -27,7 +29,7 @@ namespace LittleNPCs.Framework {
         /// <param name="Width">Texture width</param>
         /// <param name="Height">Texture height</param>
         /// <param name="Data">Texture data. Using <code>uint</code> instead of <code>Color</code> to get more compact JSON.</param>
-        public record class TransferImage(int Width, int Height, uint[] Data) {
+        public record TransferImage(int Width, int Height, uint[] Data) {
             /// <summary>
             /// Factory method instead of constructor.
             /// This class already has a primary constructor and defining another one would prevent JSON serialization.
@@ -49,11 +51,11 @@ namespace LittleNPCs.Framework {
             }
         }
 
-        private record class TransferData(CharacterData CharacterData,
-                                          Dictionary<string, string> MasterScheduleData,
-                                          TransferImage Sprite,
-                                          TransferImage Portrait,
-                                          Dictionary<string, string> Dialogue) {
+        private record TransferData(CharacterData CharacterData,
+                                    Dictionary<string, string> MasterScheduleData,
+                                    TransferImage Sprite,
+                                    TransferImage Portrait,
+                                    Dictionary<string, string> Dialogue) {
         }
 
         private static readonly Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
@@ -77,18 +79,16 @@ namespace LittleNPCs.Framework {
         /// Wrapped child's hat, if any. Must be removed during the day.
         /// </summary>
         /// <value></value>
-        public Hat WrappedChildHat {
-            get => wrappedChildHat_.Value;
-        }
+        public Hat WrappedChildHat => wrappedChildHat_.Value;
 
 
         protected override void initNetFields() {
             base.initNetFields();
-            base.NetFields.AddField(wrappedChildHat_)
-                          .AddField(transferDataJson_)
-                          .AddField(yearOfBirth_);
+            NetFields.AddField(wrappedChildHat_)
+                     .AddField(transferDataJson_)
+                     .AddField(yearOfBirth_);
 
-            transferDataJson_.fieldChangeVisibleEvent += (self, oldValue, newValue) => {
+            transferDataJson_.fieldChangeVisibleEvent += (_, _, newValue) => {
                 if (newValue is not null) {
                     AssignTransferData(newValue);
                 }
@@ -105,9 +105,7 @@ namespace LittleNPCs.Framework {
         /// <summary>
         /// Determines whether it's time for a child to go to bed.
         /// </summary>
-        private bool IsTimeForBed {
-            get => (ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime) || (!ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= 2130);
-        }
+        private bool IsTimeForBed => (ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= ModEntry.config_.CurfewTime) || (!ModEntry.config_.DoChildrenHaveCurfew && Game1.timeOfDay >= 2130);
 
         public LittleNPC() {
         }
@@ -141,33 +139,33 @@ namespace LittleNPCs.Framework {
             }
         }
 
-        public static LittleNPC FromChild(Child child, FarmHouse farmHouse) {
-            Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(child.GetChildIndex())) * 64f;
+        public static LittleNPC FromChild(Child childNPC, FarmHouse farmHouse) {
+            Vector2 bedSpot = Utility.PointToVector2(farmHouse.GetChildBedSpot(childNPC.GetChildIndex())) * 64f;
             // (0, 0) means there's no bed available and the child will be stuck in the wall. We must avoid that.
             if (bedSpot == Vector2.Zero) {
                 bedSpot = Utility.PointToVector2(farmHouse.getRandomOpenPointInHouse(random_, 1, 200)) * 64f;
-                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] No bed spot for {child.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
+                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] No bed spot for {childNPC.Name} found, setting it to random point {Utility.Vector2ToPoint(bedSpot / 64f)}", LogLevel.Warn);
             }
 
-            string assetName = Common.CreateInternalAssetName(child.GetChildIndex(), child.Name);
+            string assetName = Common.CreateInternalAssetName(childNPC.GetChildIndex(), childNPC.Name);
 
             AnimatedSprite sprite = new AnimatedSprite($"Characters/{assetName}", 0, 16, 32);
             Texture2D portrait = Game1.content.Load<Texture2D>($"Portraits/{assetName}");
 
             // ATTENTION: DefaultMap of child is just FarmHouse which is wrong for farmhands.
-            var npc = new LittleNPC(child,
+            var npc = new LittleNPC(childNPC,
                                     sprite,
                                     bedSpot,
                                     farmHouse.NameOrUniqueName,
-                                    child.FacingDirection,
+                                    childNPC.FacingDirection,
                                     assetName,
                                     portrait);
 
             // Set gender. Virtual property, can't be set in the constructor.
-            npc.Gender = child.Gender;
+            npc.Gender = childNPC.Gender;
 
             // Set displayName. Virtual property, can't be set in the constructor.
-            npc.displayName = child.Name;
+            npc.displayName = childNPC.Name;
 
             // Generate and set character data.
             // ATTENTION: Fields such as birthday, gender, home... must not be set by CP.
@@ -512,9 +510,9 @@ namespace LittleNPCs.Framework {
             DefaultMap = "BusStop";
             DefaultPosition = new Vector2(10, 23) * 64;
 
-            Dictionary<int, SchedulePathDescription> retval = null;
+            Dictionary<int, SchedulePathDescription> result;
             try {
-                retval = base.parseMasterSchedule(scheduleKey, rawData);
+                result = base.parseMasterSchedule(scheduleKey, rawData);
 
                 ParseMasterSchedulePatchExecuted = true;
             }
@@ -523,7 +521,7 @@ namespace LittleNPCs.Framework {
                 DefaultPosition = previousDefaultPosition;
             }
 
-            return retval;
+            return result;
         }
 
         protected override void prepareToDisembarkOnNewSchedulePath() {
@@ -565,7 +563,7 @@ namespace LittleNPCs.Framework {
                     var characterData = GetData();
 
                     // Exception is possible here but since it's caught immediately we don't care.
-                    return new SDate(characterData.BirthDay, characterData.BirthSeason.Value, yearOfBirth_.Value);
+                    return new SDate(characterData.BirthDay, characterData.BirthSeason ?? Season.Spring, yearOfBirth_.Value);
                 }
                 catch (Exception e2) {
                     ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Error in GetBirthday (calling GetData()), using spring 1 as fallback: {e2.Message}", LogLevel.Warn);
