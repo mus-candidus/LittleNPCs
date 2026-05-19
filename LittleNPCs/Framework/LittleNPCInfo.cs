@@ -33,7 +33,7 @@ namespace LittleNPCs.Framework {
                     Gender = littleNPC.Gender;
                     Birthday = littleNPC.GetBirthday();
                     LoadedFrom = LoadState.LittleNPC;
-                    ModEntry.monitor_.Log($"[{Common.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}", LogLevel.Trace);
+                    ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] GetLittleNPC({childIndex}) returns {this}");
                 }
                 else {
                     // No LittleNPC, try to get Child object.
@@ -55,10 +55,10 @@ namespace LittleNPCs.Framework {
                 info.Gender = child.Gender;
                 info.Birthday = Common.GetBirthday(child, loadFromSave);
                 info.LoadedFrom = loadFromSave ? LoadState.SaveGame : LoadState.Child;
-                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}", LogLevel.Trace);
+                ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns {info}");
             }
             else {
-                ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns null", LogLevel.Trace);
+                ModEntry.monitor_.VerboseLog($"[{Common.GetHostTag()}] Query for convertible child with index {childIndex} returns null");
             }
         }
 
