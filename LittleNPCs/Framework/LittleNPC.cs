@@ -55,7 +55,8 @@ namespace LittleNPCs.Framework {
                                     Dictionary<string, string> MasterScheduleData,
                                     TransferImage Sprite,
                                     TransferImage Portrait,
-                                    Dictionary<string, string> Dialogue) {
+                                    Dictionary<string, string> Dialogue,
+                                    string NPCGiftTaste) {
         }
 
         private static readonly Random random_ = new Random(Game1.Date.TotalDays + (int) Game1.uniqueIDForThisGame / 2 + (int) Game1.MasterPlayer.UniqueMultiplayerID * 2);
@@ -80,6 +81,12 @@ namespace LittleNPCs.Framework {
         /// </summary>
         /// <value></value>
         public Hat WrappedChildHat => wrappedChildHat_.Value;
+
+        /// <inheritdoc/>
+        public override bool CanSocialize {
+            // LittleNPCs can always socialize.
+            get => true;
+        }
 
 
         protected override void initNetFields() {
@@ -199,11 +206,16 @@ namespace LittleNPCs.Framework {
             npc.getMasterScheduleRawData();
 
             // Serialize it to JSON to transmit it over the wire.
+            if (!Game1.NPCGiftTastes.TryGetValue(npc.Name, out string giftTastes)) {
+                giftTastes = string.Empty;
+            }
+
             var transferData = new TransferData(characterData,
                                                 npc._masterScheduleData,
                                                 TransferImage.FromTexture(sprite.spriteTexture),
                                                 TransferImage.FromTexture(portrait),
-                                                npc.Dialogue);
+                                                npc.Dialogue,
+                                                giftTastes);
 
             string transferDataJson = JsonConvert.SerializeObject(transferData);
 
@@ -253,6 +265,10 @@ namespace LittleNPCs.Framework {
                 ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Found and modified existing character data for {Name}: {loggedCharacterData}", LogLevel.Info);
             }
 
+            // Set gift tastes.
+            Game1.NPCGiftTastes[Name] = transferData.NPCGiftTaste;
+
+            ModEntry.CachedGiftTastes[Name] = transferData.NPCGiftTaste;
             ModEntry.CachedAssets[$"Characters/{Name}"] = transferData.Sprite;
             ModEntry.CachedAssets[$"Portraits/{Name}"] = transferData.Portrait;
             ModEntry.CachedAssets[$"Characters/Dialogue/{Name}"] = transferData.Dialogue;

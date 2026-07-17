@@ -39,6 +39,8 @@ namespace LittleNPCs {
 
         public static Dictionary<string, object> CachedAssets { get; } = new Dictionary<string, object>();
 
+        public static Dictionary<string, string> CachedGiftTastes { get; } = new Dictionary<string, string>();
+
         public static bool MustUnload { get; private set; }
 
         public override void Entry(IModHelper helper) {
@@ -192,6 +194,8 @@ namespace LittleNPCs {
             for (int i = 0; i < ModEntry.config_.MaximumNumberOfLittleNPCs; ++i) {
                 ProvideFallbackAssets(e, i);
             }
+
+            ProvideCachedGiftTastes(e);
         }
 
         private void OnOneSecondUpdateTicking(object sender, OneSecondUpdateTickingEventArgs e) {
@@ -434,6 +438,23 @@ namespace LittleNPCs {
                     return dialogue;
                 }, AssetLoadPriority.Low);
             }
+        }
+
+        private void ProvideCachedGiftTastes(AssetRequestedEventArgs e) {
+            // Provide Data/NPCGiftTastes only.
+            if (!e.NameWithoutLocale.IsEquivalentTo("Data/NPCGiftTastes")) {
+                return;
+            }
+
+            e.Edit((data) => {
+                foreach (var cachedGiftTaste in ModEntry.CachedGiftTastes) {
+                    var giftTastes = data.AsDictionary<string, string>().Data;
+                    if (!giftTastes.TryGetValue(cachedGiftTaste.Key, out string giftTaste) || string.IsNullOrEmpty(giftTaste)) {
+                        giftTastes[cachedGiftTaste.Key] = cachedGiftTaste.Value;
+                        ModEntry.monitor_.Log($"[{Common.GetHostTag()}] Added entry for {cachedGiftTaste.Key} from cache to {e.Name}", LogLevel.Info);
+                    }
+                }
+            });
         }
 
         /// <summary>
