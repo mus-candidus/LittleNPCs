@@ -1,0 +1,10 @@
+{
+  "hello.content-pack-missing": "嗨 ${爸爸^妈妈}$！请为我安装对应的内容包。#$e#详情请前往nexusmods.com网站查找星露谷物语尾号15152的模组。",
+  "config.age-in-days-when-children-become-little-npcs": "孩子成长为小NPC的天数",
+  "config.do-children-run-around-in-the-house": "孩子是否会在屋内跑来跑去",
+  "config.do-children-have-curfew": "孩子是否有宵禁时间",
+  "config.curfew-time": "宵禁时间",
+  "config.do-children-visit-volcano-island": "孩子是否会去姜岛",
+  "config.maximum-number-of-children": "孩子最大数量，",
+  "config.maximum-number-of-little-npcs": "孩子可成长为小NPC的最大数量"
+}
