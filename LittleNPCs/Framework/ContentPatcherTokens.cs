@@ -67,7 +67,8 @@ namespace LittleNPCs.Framework {
         }
 
         private class TokenImplementation {
-            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[ModEntry.config_.MaximumNumberOfChildren];
+            // Four tokens are registered.
+            private LittleNPCInfo[] cachedLittleNPCs_ = new LittleNPCInfo[4];
 
             public TokenImplementation(ModEntry modEntry) {
                 var api = modEntry.Helper.ModRegistry.GetApi<ContentPatcher.IContentPatcherAPI>("Pathoschild.ContentPatcher");
